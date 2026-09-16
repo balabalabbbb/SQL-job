@@ -11,6 +11,9 @@
 
 USE retail_store;
 
+-- 禁用外键检查，允许按任意顺序删除表（避免外键约束导致DROP失败）
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- ============================================================
 -- 1. 商品表 product
 -- ============================================================
@@ -260,3 +263,9 @@ SHOW TABLES;
 -- 删除顺序：order_item → orders → inventory → employee → member → product
 -- 下一步：执行 03_insert_sample_data.sql 插入样例数据
 -- ============================================================
+
+-- 重新启用外键检查
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- 验证外键约束已启用
+SELECT @@FOREIGN_KEY_CHECKS AS foreign_key_checks_enabled;

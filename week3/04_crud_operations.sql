@@ -211,6 +211,9 @@ SELECT '=== 创建新订单前：订单总数 ===' AS 操作;
 SELECT COUNT(*) AS 订单总数 FROM orders;
 
 -- 创建新订单（注意：先插入订单主表，再插入订单明细）
+-- 使用事务保证订单主表与明细的一致性，任何一步失败则全部回滚
+START TRANSACTION;
+
 INSERT INTO orders (order_id, order_time, total_amount, payment_method, order_status, member_id, cashier_id, remark)
 VALUES ('ORD202609160001', '2026-09-16 14:30:00', 14.00, '微信', '已支付', 'M0001', 2, '测试订单');
 
@@ -220,6 +223,9 @@ VALUES
 ('ORD202609160001', 'P0001', 2, 3.50, 7.00),
 ('ORD202609160001', 'P0007', 1, 3.00, 3.00),
 ('ORD202609160001', 'P0004', 2, 2.00, 4.00);
+
+-- 提交事务（如果以上任何一步出错，应执行ROLLBACK回滚）
+COMMIT;
 
 -- 操作后：查看新订单及其明细（连接查询）
 SELECT '=== 创建新订单后：订单主表信息 ===' AS 操作;
@@ -326,11 +332,17 @@ WHERE o.order_id = 'ORD202609160001'
 GROUP BY o.order_id, o.total_amount;
 
 -- 注意：删除订单前必须先删除订单明细（因为order_item有外键引用orders）
+-- 使用事务保证删除操作的原子性，明细和主表要么全部删除，要么都不删
+START TRANSACTION;
+
 -- 先删除订单明细
 DELETE FROM order_item WHERE order_id = 'ORD202609160001';
 
 -- 再删除订单主表
 DELETE FROM orders WHERE order_id = 'ORD202609160001';
+
+-- 提交事务
+COMMIT;
 
 -- 操作后：验证删除结果
 SELECT '=== 删除订单后：验证订单已删除 ===' AS 操作;
