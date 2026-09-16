@@ -7,6 +7,29 @@
 --   2. 执行本脚本进行CRUD操作演示
 --   3. 每个操作前都有SELECT验证目标行，修改/删除后有结果验证
 --   4. DELETE和UPDATE操作前先用相同条件SELECT确认目标
+--
+-- ⚠️  重要提示：
+--   本脚本包含INSERT、UPDATE、DELETE操作，执行后会修改和删除样例数据！
+--   执行后数据库状态将发生以下变化：
+--     - 商品表：新增P0011后又被删除，最终商品数恢复为10
+--     - 库存表：新增inventory_id=11后又被删除，P0001库存从48扣减为43
+--     - 订单表：新增ORD202609160001后又被删除，最终订单数恢复为10
+--     - 订单明细表：新增3条明细后又被删除，最终明细数恢复为20
+--
+-- 🔄 数据恢复方法：
+--   如需恢复原始样例数据，请按顺序重新执行以下脚本：
+--     1. 02_create_tables.sql  （删除并重建所有表，会清空所有数据）
+--     2. 03_insert_sample_data.sql  （重新插入58条样例数据）
+--   或者执行以下SQL快速恢复：
+--     SET FOREIGN_KEY_CHECKS = 0;
+--     TRUNCATE TABLE order_item;
+--     TRUNCATE TABLE orders;
+--     TRUNCATE TABLE inventory;
+--     TRUNCATE TABLE employee;
+--     TRUNCATE TABLE member;
+--     TRUNCATE TABLE product;
+--     SET FOREIGN_KEY_CHECKS = 1;
+--     -- 然后重新执行 03_insert_sample_data.sql
 -- ============================================================
 
 USE retail_store;
