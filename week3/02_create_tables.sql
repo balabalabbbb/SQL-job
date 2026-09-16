@@ -28,7 +28,7 @@ CREATE TABLE product (
     category        VARCHAR(20)     NOT NULL    COMMENT '商品分类：食品/饮料/日用品/文具/其他',
     sale_price      DECIMAL(8,2)    NOT NULL    COMMENT '销售单价（元），大于0',
     purchase_price  DECIMAL(8,2)    NOT NULL    COMMENT '进货单价（元），大于0，小于等于销售价',
-    unit            VARCHAR(10)     NOT NULL    COMMENT '计量单位：瓶/包/个/袋/盒/斤/其他',
+    unit            VARCHAR(10)     NOT NULL    COMMENT '计量单位：瓶/包/个/袋/盒/桶/支/罐/斤/其他',
     supplier        VARCHAR(50)     NULL        COMMENT '供应商名称',
     production_date DATE            NULL        COMMENT '生产日期',
     shelf_life_days INT             NULL        COMMENT '保质期（天），大于0',
@@ -42,7 +42,7 @@ CREATE TABLE product (
     CONSTRAINT chk_product_purchase_price  CHECK (purchase_price > 0),
     CONSTRAINT chk_product_price_relation  CHECK (purchase_price <= sale_price),
     CONSTRAINT chk_product_category        CHECK (category IN ('食品','饮料','日用品','文具','其他')),
-    CONSTRAINT chk_product_unit            CHECK (unit IN ('瓶','包','个','袋','盒','斤','其他')),
+    CONSTRAINT chk_product_unit            CHECK (unit IN ('瓶','包','个','袋','盒','桶','支','罐','斤','其他')),
     CONSTRAINT chk_product_status          CHECK (status IN ('在售','下架','缺货')),
     CONSTRAINT chk_product_shelf_life      CHECK (shelf_life_days IS NULL OR shelf_life_days > 0)
 
@@ -175,7 +175,7 @@ CREATE TABLE inventory (
 DROP TABLE IF EXISTS orders;
 
 CREATE TABLE orders (
-    order_id        VARCHAR(14)     NOT NULL    COMMENT '订单唯一编号，格式ORD+yyyyMMdd+4位序号，如ORD202609150001',
+    order_id        VARCHAR(20)     NOT NULL    COMMENT '订单唯一编号，格式ORD+yyyyMMdd+4位序号，如ORD202609150001',
     order_time      DATETIME        NOT NULL    DEFAULT CURRENT_TIMESTAMP   COMMENT '下单时间',
     total_amount    DECIMAL(10,2)   NOT NULL    DEFAULT 0.00  COMMENT '订单总金额（元），大于等于0',
     payment_method  VARCHAR(10)     NOT NULL    COMMENT '支付方式：现金/微信/支付宝/其他',
@@ -215,7 +215,7 @@ DROP TABLE IF EXISTS order_item;
 
 CREATE TABLE order_item (
     item_id     INT             NOT NULL    AUTO_INCREMENT  COMMENT '明细唯一编号，自增主键',
-    order_id    VARCHAR(14)     NOT NULL    COMMENT '所属订单编号',
+    order_id    VARCHAR(20)     NOT NULL    COMMENT '所属订单编号',
     product_id  VARCHAR(10)     NOT NULL    COMMENT '购买的商品编号',
     quantity    INT             NOT NULL    DEFAULT 1   COMMENT '购买数量，大于0',
     unit_price  DECIMAL(8,2)    NOT NULL    COMMENT '成交时商品单价（元），大于0，记录历史成交价',
