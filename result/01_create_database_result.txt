@@ -1,0 +1,12 @@
+﻿cmd : mysql: [Warning] Using a password on the command line interface can be insecure.
+所在位置 行:19 字符: 1
++ cmd /c "`"$mysql`" -u root -p$password --default-character-set=utf8mb ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (mysql: [Warning...an be insecure.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
++--------------+----------------------------------------------------------------------------------------------------------------------------------------+
+| Database     | Create Database                                                                                                                        |
++--------------+----------------------------------------------------------------------------------------------------------------------------------------+
+| retail_store | CREATE DATABASE `retail_store` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */ |
++--------------+----------------------------------------------------------------------------------------------------------------------------------------+

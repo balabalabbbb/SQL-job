@@ -1,0 +1,29 @@
+﻿cmd : mysql: [Warning] Using a password on the command line interface can be insecure.
+所在位置 行:23 字符: 1
++ cmd /c "`"$mysql`" -u root -p$password --default-character-set=utf8mb ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (mysql: [Warning...an be insecure.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
++------------------------+
+| Tables_in_retail_store |
++------------------------+
+| employee               |
+| inventory              |
+| member                 |
+| order_item             |
+| orders                 |
+| product                |
+| v_category_sales       |
+| v_daily_sales          |
+| v_employee_performance |
+| v_inventory_status     |
+| v_member_sales         |
+| v_order_detail         |
+| v_product_sales        |
++------------------------+
++----------------------------+
+| foreign_key_checks_enabled |
++----------------------------+
+|                          1 |
++----------------------------+

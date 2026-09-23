@@ -1,0 +1,103 @@
+﻿cmd : mysql: [Warning] Using a password on the command line interface can be insecure.
+所在位置 行:16 字符: 1
++ cmd /c "`"$mysql`" -u root -p$password --default-character-set=utf8mb ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (mysql: [Warning...an be insecure.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
++----------------------------------+
+| 表名                             |
++----------------------------------+
+| === 商品表 product 索引 ===      |
++----------------------------------+
++---------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table   | Non_unique | Key_name                    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++---------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| product |          0 | PRIMARY                     |            1 | product_id  | A         |           6 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| product |          1 | idx_product_category        |            1 | category    | A         |           4 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| product |          1 | idx_product_status          |            1 | status      | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| product |          1 | idx_product_category_status |            1 | category    | A         |           4 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| product |          1 | idx_product_category_status |            2 | status      | A         |           6 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++---------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++---------------------------------+
+| 表名                            |
++---------------------------------+
+| === 会员表 member 索引 ===      |
++---------------------------------+
++--------+------------+-------------------------+--------------+---------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name                | Seq_in_index | Column_name   | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+-------------------------+--------------+---------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| member |          0 | PRIMARY                 |            1 | member_id     | A         |           5 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| member |          0 | uk_member_phone         |            1 | phone         | A         |           5 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| member |          1 | idx_member_level        |            1 | member_level  | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| member |          1 | idx_member_status       |            1 | member_status | A         |           2 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| member |          1 | idx_member_level_status |            1 | member_level  | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| member |          1 | idx_member_level_status |            2 | member_status | A         |           4 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++--------+------------+-------------------------+--------------+---------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++-----------------------------------+
+| 表名                              |
++-----------------------------------+
+| === 员工表 employee 索引 ===      |
++-----------------------------------+
++----------+------------+-----------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table    | Non_unique | Key_name              | Seq_in_index | Column_name     | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++----------+------------+-----------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| employee |          0 | PRIMARY               |            1 | employee_id     | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| employee |          0 | uk_employee_account   |            1 | login_account   | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| employee |          1 | idx_employee_position |            1 | position        | A         |           2 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| employee |          1 | idx_employee_status   |            1 | employee_status | A         |           2 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++----------+------------+-----------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++------------------------------------+
+| 表名                               |
++------------------------------------+
+| === 库存表 inventory 索引 ===      |
++------------------------------------+
++-----------+------------+------------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table     | Non_unique | Key_name               | Seq_in_index | Column_name     | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++-----------+------------+------------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| inventory |          0 | PRIMARY                |            1 | inventory_id    | A         |          10 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| inventory |          0 | uk_inventory_product   |            1 | product_id      | A         |          10 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| inventory |          1 | fk_inventory_employee  |            1 | last_updated_by | A         |           2 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| inventory |          1 | idx_inventory_quantity |            1 | quantity        | A         |           9 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| inventory |          1 | idx_inventory_shelf    |            1 | shelf_location  | A         |          10 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++-----------+------------+------------------------+--------------+-----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++---------------------------------+
+| 表名                            |
++---------------------------------+
+| === 订单表 orders 索引 ===      |
++---------------------------------+
++--------+------------+-------------------------+--------------+----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table  | Non_unique | Key_name                | Seq_in_index | Column_name    | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++--------+------------+-------------------------+--------------+----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| orders |          0 | PRIMARY                 |            1 | order_id       | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_order_time   |            1 | order_time     | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_payment      |            1 | payment_method | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_status       |            1 | order_status   | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_member_time  |            1 | member_id      | A         |           0 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_member_time  |            2 | order_time     | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_cashier_time |            1 | cashier_id     | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| orders |          1 | idx_orders_cashier_time |            2 | order_time     | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++--------+------------+-------------------------+--------------+----------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++-------------------------------------------+
+| 表名                                      |
++-------------------------------------------+
+| === 订单明细表 order_item 索引 ===        |
++-------------------------------------------+
++------------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table      | Non_unique | Key_name                    | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++------------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| order_item |          0 | PRIMARY                     |            1 | item_id     | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| order_item |          0 | uk_order_item_order_product |            1 | order_id    | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| order_item |          0 | uk_order_item_order_product |            2 | product_id  | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| order_item |          1 | idx_order_item_product      |            1 | product_id  | A         |           0 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++------------+------------+-----------------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
++------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| 表名       | 索引数量     | 索引列表                                                                                                                                                                |
++------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| employee   |            4 | idx_employee_position, idx_employee_status, PRIMARY, uk_employee_account                                                                                                |
+| inventory  |            5 | fk_inventory_employee, idx_inventory_quantity, idx_inventory_shelf, PRIMARY, uk_inventory_product                                                                       |
+| member     |            6 | idx_member_level, idx_member_level_status, idx_member_level_status, idx_member_status, PRIMARY, uk_member_phone                                                         |
+| order_item |            4 | idx_order_item_product, PRIMARY, uk_order_item_order_product, uk_order_item_order_product                                                                               |
+| orders     |            8 | idx_orders_cashier_time, idx_orders_cashier_time, idx_orders_member_time, idx_orders_member_time, idx_orders_order_time, idx_orders_payment, idx_orders_status, PRIMARY |
+| product    |            5 | idx_product_category, idx_product_category_status, idx_product_category_status, idx_product_status, PRIMARY                                                             |
++------------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
