@@ -64,12 +64,19 @@ SQL-job/
 │   ├── 02_create_tables.sql     # 建表脚本（含约束）
 │   ├── 03_insert_sample_data.sql # 样例数据插入脚本
 │   ├── 04_crud_operations.sql   # 增删改查操作脚本
+│   ├── 05_index_optimization.sql # 索引优化脚本
 │   ├── 复现说明.md
 │   ├── 阶段报告.md
 │   ├── AI使用记录.md
 │   └── 组内分工表.md
 └── week4/                       # 第四周：连接查询、视图、完整性与授权
-    └── .gitkeep
+    ├── query.sql                # 多表查询与统计查询（16个查询）
+    ├── view.sql                 # 统计视图（7个视图）
+    ├── constraint.sql           # 完整性约束验证（6类约束）
+    ├── role.sql                 # 角色权限管理（4个角色）
+    ├── 阶段报告.md
+    ├── AI使用记录.md
+    └── 组内分工表.md
 ```
 
 ## 数据库设计概要
@@ -111,19 +118,70 @@ SQL-job/
 mysql -u root -p < week3/01_create_database.sql
 
 # 2. 创建数据表（含约束）
-mysql -u root -p < week3/02_create_tables.sql
+mysql -u root -p retail_store < week3/02_create_tables.sql
 
 # 3. 插入样例数据
-mysql -u root -p < week3/03_insert_sample_data.sql
+mysql -u root -p retail_store < week3/03_insert_sample_data.sql
 
 # 4. 执行CRUD操作演示（可选，会修改和删除数据）
-mysql -u root -p < week3/04_crud_operations.sql
+mysql -u root -p retail_store < week3/04_crud_operations.sql
+
+# 5. 创建索引优化（可选，提升查询性能）
+mysql -u root -p retail_store < week3/05_index_optimization.sql
 ```
 
 详细说明请参考 `week3/复现说明.md`。
 
-### 第四周（待完成）
-连接查询、视图、完整性约束完善、角色权限授权。
+### 第四周（连接查询、视图、完整性与授权）
+确保已完成第三周的建库、建表、插数后，按顺序执行：
+
+```bash
+# 1. 多表查询与统计查询（16个业务查询）
+mysql -u root -p retail_store < week4/query.sql
+
+# 2. 创建统计视图（7个视图）
+mysql -u root -p retail_store < week4/view.sql
+
+# 3. 完整性约束验证（6类约束正反例）
+mysql -u root -p retail_store < week4/constraint.sql
+
+# 4. 角色权限管理（4个角色 + 越权测试）
+mysql -u root -p retail_store < week4/role.sql
+```
+
+**注意**：
+- `constraint.sql` 中的反例测试以注释形式呈现，手动取消注释可验证报错
+- `role.sql` 会创建4个测试用户，密码分别为 Manager@123 / Cashier@123 / Member@123 / Guest@123
+- 越权测试需用对应测试用户登录执行，详见 `week4/role.sql` 中的测试用例
+
+## v0.1 阶段完整复现
+
+从空数据库开始，依次执行以下脚本即可完整复现v0.1版本：
+
+```bash
+# 第一阶段：建库建表插数（week3）
+mysql -u root -p < week3/01_create_database.sql
+mysql -u root -p retail_store < week3/02_create_tables.sql
+mysql -u root -p retail_store < week3/03_insert_sample_data.sql
+
+# 第二阶段：索引优化（可选）
+mysql -u root -p retail_store < week3/05_index_optimization.sql
+
+# 第三阶段：查询与视图（week4）
+mysql -u root -p retail_store < week4/query.sql
+mysql -u root -p retail_store < week4/view.sql
+
+# 第四阶段：约束与权限（week4）
+mysql -u root -p retail_store < week4/constraint.sql
+mysql -u root -p retail_store < week4/role.sql
+```
+
+执行完成后，数据库包含：
+- 6张表、49个字段、58条样例数据
+- 24个CHECK约束、6个外键、4个唯一约束
+- 7个统计视图
+- 4个数据库角色（店长/店员/会员/顾客）
+- 14个辅助索引
 
 ## 样例数据统计
 
@@ -151,3 +209,12 @@ mysql -u root -p < week3/04_crud_operations.sql
 | 第一周 | Add week1 deliverables: business process, roles, data boundary, report, AI log, task allocation | 2026-09-11 |
 | 第二周 | Add week2 deliverables: relational schema design for 6 tables with fields, domains, keys and sample data | 2026-09-16 |
 | 第三周 | Add week3 deliverables: DDL scripts, sample data, CRUD operations and documentation | 2026-09-16 |
+| 第三周优化 | Optimize SQL scripts: add FOREIGN_KEY_CHECKS toggle, transaction handling, index optimization, .gitignore | 2026-09-16 |
+| 第四周 | Add week4 deliverables: multi-table queries, statistical views, constraint verification, role permissions and v0.1 release | 2026-09-23 |
+
+## 版本信息
+
+- **当前版本**：v0.1（第一阶段完成）
+- **完成时间**：2026-09-23
+- **验证环境**：MySQL 8.0.28 / Windows
+- **验证状态**：所有脚本在本地MySQL环境执行通过，可完整复现
