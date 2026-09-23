@@ -11,7 +11,7 @@
 | 项目 | 内容 |
 |---|---|
 | **使用时间** | 第2周第2天 |
-| **使用人** | 成员A |
+| **使用人** | 胡海博 |
 | **AI输入（Prompt）** | "帮我设计一个小卖部管理系统的商品表和库存表，包括字段名、数据类型、主码外码，商品需要有名称、分类、价格、供应商、保质期，库存需要有数量、货架位置、最低库存预警" |
 | **AI输出摘要** | AI提供了商品表和库存表的初始设计，商品表包含id、name、category、price、stock、supplier等字段；库存表包含id、product_id、quantity、location、min_stock等字段，并标注了主码和外码 |
 | **人工修改内容** | 1. 字段名全部改为小写+下划线格式（AI输出为驼峰命名），如productName改为product_name<br>2. 商品表增加purchase_price（进货价）字段，AI原始输出只有销售价没有进货价<br>3. 商品表增加unit（计量单位）字段，AI原始输出未考虑<br>4. 商品表增加production_date（生产日期）和shelf_life_days（保质期）字段，AI原始输出未考虑食品效期管理<br>5. 商品表增加status（商品状态）字段，用于控制商品是否在售<br>6. 库存表增加last_updated（最后更新时间）和last_updated_by（最后更新人）字段，用于操作审计<br>7. 库存表的product_id增加UNIQUE约束，明确1:1关系<br>8. 金额字段统一改为DECIMAL类型，AI输出部分用了FLOAT<br>9. 所有枚举字段明确列出取值范围，AI输出未定义域 |
@@ -22,7 +22,7 @@
 | 项目 | 内容 |
 |---|---|
 | **使用时间** | 第2周第2天 |
-| **使用人** | 成员B |
+| **使用人** | 胡懿桓 |
 | **AI输入（Prompt）** | "帮我设计小卖部的订单表和订单明细表，订单需要有订单号、时间、总金额、支付方式、关联会员和收银员，订单明细需要记录每个商品的数量和价格" |
 | **AI输出摘要** | AI提供了订单表和订单明细表的初始设计，订单表包含id、order_no、order_time、total_amount、payment_method、member_id、cashier_id等字段；订单明细表包含id、order_id、product_id、quantity、price等字段 |
 | **人工修改内容** | 1. 表名从order改为orders，因为order是SQL保留字<br>2. 订单主码从自增id改为业务编码order_id（格式ORD+日期+序号），更符合业务场景<br>3. 订单表增加order_status（订单状态）字段，AI原始输出未考虑订单生命周期管理<br>4. 订单表增加remark（备注）字段<br>5. 订单明细表增加subtotal（小计金额）字段，AI原始输出只有单价和数量，没有小计<br>6. 订单明细表的price字段改名为unit_price，明确是成交时单价，并说明这是有意冗余（记录历史成交价）<br>7. 订单表的member_id设置为允许为空，支持非会员订单，AI原始输出为NOT NULL<br>8. 明确支付方式的枚举值：现金/微信/支付宝/其他<br>9. 明确订单状态的枚举值：待支付/已支付/已退款/已取消 |
@@ -33,7 +33,7 @@
 | 项目 | 内容 |
 |---|---|
 | **使用时间** | 第2周第3天 |
-| **使用人** | 成员C |
+| **使用人** | 林一 |
 | **AI输入（Prompt）** | "帮我设计小卖部的会员表和员工表，会员需要有姓名、电话、积分、等级，员工需要有姓名、岗位、登录账号密码，要标注主码候选码外码" |
 | **AI输出摘要** | AI提供了会员表和员工表的初始设计，会员表包含id、name、phone、points、level等字段；员工表包含id、name、position、username、password等字段 |
 | **人工修改内容** | 1. 会员主码从自增id改为业务编码member_id（M+4位数字），与商品表风格统一<br>2. 会员表增加register_time（注册时间）、total_spent（累计消费金额）、last_purchase_time（最后消费时间）、member_status（会员状态）字段，AI原始输出只有基本信息<br>3. 会员表的phone字段增加UNIQUE约束，作为候选码<br>4. 员工表的login_account字段增加UNIQUE约束，作为候选码<br>5. 员工表的login_password字段长度改为64，明确存储bcrypt哈希值，严禁明文，AI原始输出未提及密码存储方式<br>6. 员工表增加phone（手机号）、hire_date（入职时间）、employee_status（员工状态）、last_login_time（最后登录时间）字段<br>7. 明确会员等级枚举值：普通/银卡/金卡<br>8. 明确员工岗位枚举值：店长/店员<br>9. 明确会员状态和员工状态的枚举值<br>10. 员工表不存储薪资和身份证号（第一周数据边界确定第一周不进库），AI原始输出未涉及但需明确排除 |
