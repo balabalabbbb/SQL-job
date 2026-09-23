@@ -75,6 +75,7 @@
 ```
 SQL-job/
 ├── README.md                    # 项目说明文档
+├── 第一阶段报告.md               # 第一阶段（1-4周）总报告
 ├── sql/                         # 统一SQL脚本目录（按执行顺序编号）
 │   ├── 01_create_database.sql   # 建库脚本
 │   ├── 02_create_tables.sql     # 建表脚本（含约束）
