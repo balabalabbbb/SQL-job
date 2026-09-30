@@ -7,29 +7,29 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
-    background: #f8f9fa;
+    background: #f0f2f5;
     padding: 30px;
   }
   h1 {
     text-align: center;
     color: #1a365d;
-    margin-bottom: 10px;
-    font-size: 24px;
+    margin-bottom: 6px;
+    font-size: 26px;
   }
   .subtitle {
     text-align: center;
-    color: #666;
-    margin-bottom: 30px;
+    color: #718096;
+    margin-bottom: 24px;
     font-size: 14px;
   }
   .container {
     position: relative;
-    width: 1100px;
-    height: 720px;
+    width: 1120px;
+    height: 760px;
     margin: 0 auto;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
   svg.lines {
     position: absolute;
@@ -39,29 +39,32 @@
   }
   .entity {
     position: absolute;
-    width: 200px;
+    width: 210px;
     background: white;
     border: 2px solid #2c5282;
-    border-radius: 8px;
+    border-radius: 10px;
     z-index: 2;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(44,82,130,0.15);
   }
   .entity-header {
-    background: #2c5282;
+    background: linear-gradient(135deg, #2c5282, #1a365d);
     color: white;
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 15px;
     text-align: center;
+    letter-spacing: 1px;
   }
   .entity-body {
-    padding: 6px 0;
-    font-size: 11px;
+    padding: 4px 0;
+    font-size: 11.5px;
   }
   .attr {
-    padding: 2px 12px;
-    color: #333;
-    border-bottom: 1px solid #eee;
+    padding: 3px 14px;
+    color: #2d3748;
+    border-bottom: 1px solid #edf2f7;
+    font-family: "Consolas", monospace;
   }
   .attr:last-child { border-bottom: none; }
   .attr.pk { color: #c53030; font-weight: bold; }
@@ -69,63 +72,84 @@
   .attr.uk { color: #2f855a; font-style: italic; }
   .legend {
     position: absolute;
-    bottom: 10px;
-    left: 20px;
-    font-size: 11px;
-    color: #555;
+    bottom: 14px;
+    left: 24px;
+    font-size: 11.5px;
+    color: #4a5568;
     z-index: 3;
+    line-height: 1.8;
   }
-  .legend span { margin-right: 15px; }
+  .legend span { margin-right: 18px; }
   .legend .pk-color { color: #c53030; font-weight: bold; }
   .legend .fk-color { color: #2b6cb0; }
   .legend .uk-color { color: #2f855a; font-style: italic; }
   .rel-label {
     position: absolute;
-    background: #fef5e7;
-    border: 1px solid #d69e2e;
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 10px;
+    background: #fffaf0;
+    border: 1.5px solid #d69e2e;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
     color: #744210;
     z-index: 3;
     white-space: nowrap;
+    font-weight: 600;
   }
   .cardinality {
     position: absolute;
     background: #ebf8ff;
     border: 1px solid #4299e1;
-    border-radius: 3px;
-    padding: 1px 5px;
-    font-size: 9px;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
     color: #2c5282;
     z-index: 3;
     font-weight: bold;
+    font-family: "Consolas", monospace;
   }
+  .mn-note {
+    position: absolute;
+    background: #f0fff4;
+    border: 1.5px dashed #38a169;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #22543d;
+    z-index: 3;
+    line-height: 1.6;
+    max-width: 220px;
+  }
+  .mn-note strong { color: #22543d; }
 </style>
 </head>
 <body>
 
 <h1>小卖部管理系统 ER 图</h1>
-<p class="subtitle">第一阶段 v0.1 数据库反推 ER 模型 | 6 实体 · 6 联系 | Crow's Foot 表示法</p>
+<p class="subtitle">第一阶段 v0.1 数据库反推 ER 模型 | 6 实体 · 6 联系 · Crow's Foot 表示法 | 基数格式：最小..最大</p>
 
 <div class="container">
-<svg class="lines" viewBox="0 0 1100 720">
-  <!-- MEMBER -> ORDERS (1:N, 可选) -->
-  <line x1="130" y1="175" x2="130" y2="430" stroke="#4299e1" stroke-width="1.5"/>
-  <!-- EMPLOYEE -> ORDERS (1:N, 必须) -->
-  <line x1="970" y1="175" x2="970" y2="430" stroke="#4299e1" stroke-width="1.5"/>
-  <!-- EMPLOYEE -> INVENTORY (1:N, 必须) -->
-  <path d="M 970 175 Q 970 300 780 300 L 680 300" fill="none" stroke="#4299e1" stroke-width="1.5"/>
-  <!-- PRODUCT -> INVENTORY (1:1, 必须) -->
-  <line x1="420" y1="300" x2="480" y2="300" stroke="#4299e1" stroke-width="1.5"/>
-  <!-- ORDERS -> ORDER_ITEM (1:N, 必须) -->
-  <line x1="230" y1="520" x2="480" y2="520" stroke="#4299e1" stroke-width="1.5"/>
-  <!-- PRODUCT -> ORDER_ITEM (1:N, 可选) -->
-  <path d="M 300 370 Q 300 480 350 520 L 480 520" fill="none" stroke="#4299e1" stroke-width="1.5"/>
+<svg class="lines" viewBox="0 0 1120 760">
+  <!-- R1: MEMBER -> ORDERS (1:N, 两端可选) 垂直线 -->
+  <line x1="155" y1="195" x2="155" y2="475" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R2: EMPLOYEE -> ORDERS (1:N, 员工必须) 长曲线绕过中间 -->
+  <path d="M 965 195 C 965 350, 965 420, 900 475 L 260 510" fill="none" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R3: EMPLOYEE -> INVENTORY (1:N, 必须) 平滑曲线 -->
+  <path d="M 965 195 C 965 280, 800 310, 700 330" fill="none" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R4: PRODUCT -> INVENTORY (1:1, 必须) 水平线 -->
+  <line x1="340" y1="365" x2="460" y2="365" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R5: ORDERS -> ORDER_ITEM (1:N, 必须) 水平线 -->
+  <line x1="260" y1="565" x2="460" y2="565" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R6: PRODUCT -> ORDER_ITEM (1:N, 商品可选) 平滑曲线 -->
+  <path d="M 235 470 C 235 510, 300 545, 460 565" fill="none" stroke="#4299e1" stroke-width="2"/>
 </svg>
 
 <!-- 实体：MEMBER -->
-<div class="entity" style="top:30px; left:30px;">
+<div class="entity" style="top:50px; left:50px;">
   <div class="entity-header">会员 MEMBER</div>
   <div class="entity-body">
     <div class="attr pk">member_id (PK)</div>
@@ -141,7 +165,7 @@
 </div>
 
 <!-- 实体：EMPLOYEE -->
-<div class="entity" style="top:30px; left:870px;">
+<div class="entity" style="top:50px; left:860px;">
   <div class="entity-header">员工 EMPLOYEE</div>
   <div class="entity-body">
     <div class="attr pk">employee_id (PK)</div>
@@ -157,7 +181,7 @@
 </div>
 
 <!-- 实体：PRODUCT -->
-<div class="entity" style="top:230px; left:220px;">
+<div class="entity" style="top:270px; left:130px;">
   <div class="entity-header">商品 PRODUCT</div>
   <div class="entity-body">
     <div class="attr pk">product_id (PK)</div>
@@ -174,7 +198,7 @@
 </div>
 
 <!-- 实体：INVENTORY -->
-<div class="entity" style="top:240px; left:480px;">
+<div class="entity" style="top:280px; left:460px;">
   <div class="entity-header">库存 INVENTORY</div>
   <div class="entity-body">
     <div class="attr pk">inventory_id (PK)</div>
@@ -188,7 +212,7 @@
 </div>
 
 <!-- 实体：ORDERS -->
-<div class="entity" style="top:440px; left:30px;">
+<div class="entity" style="top:475px; left:50px;">
   <div class="entity-header">订单 ORDERS</div>
   <div class="entity-body">
     <div class="attr pk">order_id (PK)</div>
@@ -203,7 +227,7 @@
 </div>
 
 <!-- 实体：ORDER_ITEM -->
-<div class="entity" style="top:450px; left:480px;">
+<div class="entity" style="top:490px; left:460px;">
   <div class="entity-header">订单明细 ORDER_ITEM</div>
   <div class="entity-body">
     <div class="attr pk">item_id (PK)</div>
@@ -216,33 +240,48 @@
 </div>
 
 <!-- 联系标签 -->
-<div class="rel-label" style="top:290px; left:60px;">下单</div>
-<div class="rel-label" style="top:290px; left:900px;">收银</div>
-<div class="rel-label" style="top:278px; left:720px;">更新库存</div>
-<div class="rel-label" style="top:288px; left:430px;">拥有</div>
-<div class="rel-label" style="top:505px; left:330px;">包含</div>
-<div class="rel-label" style="top:430px; left:310px;">出现在</div>
+<div class="rel-label" style="top:320px; left:80px;">下单</div>
+<div class="rel-label" style="top:350px; left:870px;">收银</div>
+<div class="rel-label" style="top:300px; left:740px;">更新库存</div>
+<div class="rel-label" style="top:350px; left:385px;">拥有</div>
+<div class="rel-label" style="top:548px; left:340px;">包含</div>
+<div class="rel-label" style="top:495px; left:250px;">出现在</div>
 
-<!-- 基数标注 -->
-<div class="cardinality" style="top:415px; left:115px;">0..1</div>
-<div class="cardinality" style="top:445px; left:115px;">0..N</div>
-<div class="cardinality" style="top:415px; left:955px;">1..1</div>
-<div class="cardinality" style="top:445px; left:955px;">0..N</div>
-<div class="cardinality" style="top:285px; left:770px;">1..1</div>
-<div class="cardinality" style="top:285px; left:660px;">0..N</div>
-<div class="cardinality" style="top:285px; left:400px;">1..1</div>
-<div class="cardinality" style="top:285px; left:465px;">1..1</div>
-<div class="cardinality" style="top:505px; left:215px;">1..1</div>
-<div class="cardinality" style="top:505px; left:460px;">1..N</div>
-<div class="cardinality" style="top:475px; left:340px;">1..1</div>
-<div class="cardinality" style="top:535px; left:340px;">0..N</div>
+<!-- 基数标注 - R1 下单 -->
+<div class="cardinality" style="top:455px; left:138px;">0..1</div>
+<div class="cardinality" style="top:490px; left:138px;">0..N</div>
+
+<!-- 基数标注 - R2 收银 -->
+<div class="cardinality" style="top:488px; left:870px;">1..1</div>
+<div class="cardinality" style="top:520px; left:870px;">0..N</div>
+
+<!-- 基数标注 - R3 更新库存 -->
+<div class="cardinality" style="top:315px; left:680px;">1..1</div>
+<div class="cardinality" style="top:340px; left:680px;">0..N</div>
+
+<!-- 基数标注 - R4 拥有库存 -->
+<div class="cardinality" style="top:350px; left:310px;">1..1</div>
+<div class="cardinality" style="top:350px; left:420px;">1..1</div>
+
+<!-- 基数标注 - R5 包含明细 -->
+<div class="cardinality" style="top:550px; left:235px;">1..1</div>
+<div class="cardinality" style="top:550px; left:430px;">1..N</div>
+
+<!-- 基数标注 - R6 商品出现在明细 -->
+<div class="cardinality" style="top:515px; left:280px;">1..1</div>
+<div class="cardinality" style="top:575px; left:280px;">0..N</div>
+
+<!-- M:N 联系说明 -->
+<div class="mn-note" style="top:640px; left:460px;">
+  <strong>M:N 联系：</strong>订单(ORDERS) 与 商品(PRODUCT) 本质为 M:N，<br>
+  通过关联实体 <strong>订单明细(ORDER_ITEM)</strong> 分解为两个 1:N 联系，<br>
+  明细含联系自身属性：数量、成交单价、小计。
+</div>
 
 <!-- 图例 -->
 <div class="legend">
-  <span><span class="pk-color">■ PK</span> 主码</span>
-  <span><span class="fk-color">■ FK</span> 外码</span>
-  <span><span class="uk-color">■ UK</span> 候选码(唯一)</span>
-  <span>基数格式：最小..最大</span>
+  <div><span class="pk-color">■ PK</span> 主码 <span class="fk-color">■ FK</span> 外码 <span class="uk-color">■ UK</span> 候选码(唯一)</div>
+  <div>基数格式：<strong>最小..最大</strong> ｜ 0=可选参与 ｜ 1=必须参与</div>
 </div>
 
 </div>
