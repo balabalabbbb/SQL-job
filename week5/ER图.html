@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>小卖部管理系统 ER 图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    background: #f8f9fa;
+    padding: 30px;
+  }
+  h1 {
+    text-align: center;
+    color: #1a365d;
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 14px;
+  }
+  .container {
+    position: relative;
+    width: 1100px;
+    height: 720px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  svg.lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+  .entity {
+    position: absolute;
+    width: 200px;
+    background: white;
+    border: 2px solid #2c5282;
+    border-radius: 8px;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .entity-header {
+    background: #2c5282;
+    color: white;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+  }
+  .entity-body {
+    padding: 6px 0;
+    font-size: 11px;
+  }
+  .attr {
+    padding: 2px 12px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+  }
+  .attr:last-child { border-bottom: none; }
+  .attr.pk { color: #c53030; font-weight: bold; }
+  .attr.fk { color: #2b6cb0; }
+  .attr.uk { color: #2f855a; font-style: italic; }
+  .legend {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+    font-size: 11px;
+    color: #555;
+    z-index: 3;
+  }
+  .legend span { margin-right: 15px; }
+  .legend .pk-color { color: #c53030; font-weight: bold; }
+  .legend .fk-color { color: #2b6cb0; }
+  .legend .uk-color { color: #2f855a; font-style: italic; }
+  .rel-label {
+    position: absolute;
+    background: #fef5e7;
+    border: 1px solid #d69e2e;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: #744210;
+    z-index: 3;
+    white-space: nowrap;
+  }
+  .cardinality {
+    position: absolute;
+    background: #ebf8ff;
+    border: 1px solid #4299e1;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 9px;
+    color: #2c5282;
+    z-index: 3;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>小卖部管理系统 ER 图</h1>
+<p class="subtitle">第一阶段 v0.1 数据库反推 ER 模型 | 6 实体 · 6 联系 | Crow's Foot 表示法</p>
+
+<div class="container">
+<svg class="lines" viewBox="0 0 1100 720">
+  <!-- MEMBER -> ORDERS (1:N, 可选) -->
+  <line x1="130" y1="175" x2="130" y2="430" stroke="#4299e1" stroke-width="1.5"/>
+  <!-- EMPLOYEE -> ORDERS (1:N, 必须) -->
+  <line x1="970" y1="175" x2="970" y2="430" stroke="#4299e1" stroke-width="1.5"/>
+  <!-- EMPLOYEE -> INVENTORY (1:N, 必须) -->
+  <path d="M 970 175 Q 970 300 780 300 L 680 300" fill="none" stroke="#4299e1" stroke-width="1.5"/>
+  <!-- PRODUCT -> INVENTORY (1:1, 必须) -->
+  <line x1="420" y1="300" x2="480" y2="300" stroke="#4299e1" stroke-width="1.5"/>
+  <!-- ORDERS -> ORDER_ITEM (1:N, 必须) -->
+  <line x1="230" y1="520" x2="480" y2="520" stroke="#4299e1" stroke-width="1.5"/>
+  <!-- PRODUCT -> ORDER_ITEM (1:N, 可选) -->
+  <path d="M 300 370 Q 300 480 350 520 L 480 520" fill="none" stroke="#4299e1" stroke-width="1.5"/>
+</svg>
+
+<!-- 实体：MEMBER -->
+<div class="entity" style="top:30px; left:30px;">
+  <div class="entity-header">会员 MEMBER</div>
+  <div class="entity-body">
+    <div class="attr pk">member_id (PK)</div>
+    <div class="attr">member_name</div>
+    <div class="attr uk">phone (UK)</div>
+    <div class="attr">register_time</div>
+    <div class="attr">points_balance</div>
+    <div class="attr">member_level</div>
+    <div class="attr">total_spent</div>
+    <div class="attr">last_purchase_time</div>
+    <div class="attr">member_status</div>
+  </div>
+</div>
+
+<!-- 实体：EMPLOYEE -->
+<div class="entity" style="top:30px; left:870px;">
+  <div class="entity-header">员工 EMPLOYEE</div>
+  <div class="entity-body">
+    <div class="attr pk">employee_id (PK)</div>
+    <div class="attr">employee_name</div>
+    <div class="attr">position</div>
+    <div class="attr uk">login_account (UK)</div>
+    <div class="attr">login_password</div>
+    <div class="attr">phone</div>
+    <div class="attr">hire_date</div>
+    <div class="attr">employee_status</div>
+    <div class="attr">last_login_time</div>
+  </div>
+</div>
+
+<!-- 实体：PRODUCT -->
+<div class="entity" style="top:230px; left:220px;">
+  <div class="entity-header">商品 PRODUCT</div>
+  <div class="entity-body">
+    <div class="attr pk">product_id (PK)</div>
+    <div class="attr">product_name</div>
+    <div class="attr">category</div>
+    <div class="attr">sale_price</div>
+    <div class="attr">purchase_price</div>
+    <div class="attr">unit</div>
+    <div class="attr">supplier</div>
+    <div class="attr">production_date</div>
+    <div class="attr">shelf_life_days</div>
+    <div class="attr">status</div>
+  </div>
+</div>
+
+<!-- 实体：INVENTORY -->
+<div class="entity" style="top:240px; left:480px;">
+  <div class="entity-header">库存 INVENTORY</div>
+  <div class="entity-body">
+    <div class="attr pk">inventory_id (PK)</div>
+    <div class="attr fk uk">product_id (FK,UK)</div>
+    <div class="attr">quantity</div>
+    <div class="attr">shelf_location</div>
+    <div class="attr">min_threshold</div>
+    <div class="attr">last_updated</div>
+    <div class="attr fk">last_updated_by (FK)</div>
+  </div>
+</div>
+
+<!-- 实体：ORDERS -->
+<div class="entity" style="top:440px; left:30px;">
+  <div class="entity-header">订单 ORDERS</div>
+  <div class="entity-body">
+    <div class="attr pk">order_id (PK)</div>
+    <div class="attr">order_time</div>
+    <div class="attr">total_amount</div>
+    <div class="attr">payment_method</div>
+    <div class="attr">order_status</div>
+    <div class="attr fk">member_id (FK,可空)</div>
+    <div class="attr fk">cashier_id (FK)</div>
+    <div class="attr">remark</div>
+  </div>
+</div>
+
+<!-- 实体：ORDER_ITEM -->
+<div class="entity" style="top:450px; left:480px;">
+  <div class="entity-header">订单明细 ORDER_ITEM</div>
+  <div class="entity-body">
+    <div class="attr pk">item_id (PK)</div>
+    <div class="attr fk">order_id (FK)</div>
+    <div class="attr fk">product_id (FK)</div>
+    <div class="attr">quantity</div>
+    <div class="attr">unit_price</div>
+    <div class="attr">subtotal</div>
+  </div>
+</div>
+
+<!-- 联系标签 -->
+<div class="rel-label" style="top:290px; left:60px;">下单</div>
+<div class="rel-label" style="top:290px; left:900px;">收银</div>
+<div class="rel-label" style="top:278px; left:720px;">更新库存</div>
+<div class="rel-label" style="top:288px; left:430px;">拥有</div>
+<div class="rel-label" style="top:505px; left:330px;">包含</div>
+<div class="rel-label" style="top:430px; left:310px;">出现在</div>
+
+<!-- 基数标注 -->
+<div class="cardinality" style="top:415px; left:115px;">0..1</div>
+<div class="cardinality" style="top:445px; left:115px;">0..N</div>
+<div class="cardinality" style="top:415px; left:955px;">1..1</div>
+<div class="cardinality" style="top:445px; left:955px;">0..N</div>
+<div class="cardinality" style="top:285px; left:770px;">1..1</div>
+<div class="cardinality" style="top:285px; left:660px;">0..N</div>
+<div class="cardinality" style="top:285px; left:400px;">1..1</div>
+<div class="cardinality" style="top:285px; left:465px;">1..1</div>
+<div class="cardinality" style="top:505px; left:215px;">1..1</div>
+<div class="cardinality" style="top:505px; left:460px;">1..N</div>
+<div class="cardinality" style="top:475px; left:340px;">1..1</div>
+<div class="cardinality" style="top:535px; left:340px;">0..N</div>
+
+<!-- 图例 -->
+<div class="legend">
+  <span><span class="pk-color">■ PK</span> 主码</span>
+  <span><span class="fk-color">■ FK</span> 外码</span>
+  <span><span class="uk-color">■ UK</span> 候选码(唯一)</span>
+  <span>基数格式：最小..最大</span>
+</div>
+
+</div>
+
+</body>
+</html>
