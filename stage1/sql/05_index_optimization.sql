@@ -66,33 +66,37 @@ CREATE INDEX idx_employee_status ON employee(employee_status);
 -- 场景：SELECT * FROM inventory WHERE quantity < min_threshold;
 CREATE INDEX idx_inventory_quantity ON inventory(quantity);
 
+-- 索引11：库存更新人索引（外键列，加速按员工查库存变更记录）
+-- 场景：SELECT * FROM inventory WHERE last_updated_by = 1;
+CREATE INDEX idx_inventory_last_updated_by ON inventory(last_updated_by);
+
 -- ----------------------------------------------------------
 -- 5. 订单表索引
 -- ----------------------------------------------------------
 
--- 索引11：订单会员ID索引（加速按会员查订单）
+-- 索引12：订单会员ID索引（加速按会员查订单）
 -- 场景：SELECT * FROM orders WHERE member_id = 'M0001';
 CREATE INDEX idx_orders_member_id ON orders(member_id);
 
--- 索引12：订单收银员ID索引（加速按收银员查订单）
+-- 索引13：订单收银员ID索引（加速按收银员查订单）
 -- 场景：SELECT * FROM orders WHERE cashier_id = 2;
 CREATE INDEX idx_orders_cashier_id ON orders(cashier_id);
 
--- 索引13：订单时间索引（加速按时间范围查询订单）
+-- 索引14：订单时间索引（加速按时间范围查询订单）
 -- 场景：SELECT * FROM orders WHERE order_time BETWEEN '2026-09-10' AND '2026-09-16';
 CREATE INDEX idx_orders_order_time ON orders(order_time);
 
--- 索引14：订单状态索引（加速按状态筛选已支付/已退款订单）
+-- 索引15：订单状态索引（加速按状态筛选已支付/已退款订单）
 CREATE INDEX idx_orders_status ON orders(order_status);
 
 -- ----------------------------------------------------------
 -- 6. 订单明细表索引
 -- ----------------------------------------------------------
 
--- 索引15：订单明细-订单ID索引（加速按订单查明细，外键自动建索引）
+-- 索引16：订单明细-订单ID索引（加速按订单查明细，外键自动建索引）
 -- 注意：外键 fk_order_item_orders 已自动创建索引，此处不重复创建
 
--- 索引16：订单明细-商品ID索引（加速按商品查销售记录，外键自动建索引）
+-- 索引17：订单明细-商品ID索引（加速按商品查销售记录，外键自动建索引）
 -- 注意：外键 fk_order_item_product 已自动创建索引，此处不重复创建
 
 -- ============================================================
@@ -155,13 +159,13 @@ WHERE order_time >= '2026-09-15' AND order_time < '2026-09-16';
 
 -- ============================================================
 -- 索引优化脚本执行完成
--- 共创建14个非主键/非唯一约束索引：
+-- 共创建15个非主键/非唯一约束索引：
 --   商品表：3个（分类、状态、名称）
 --   会员表：2个（等级、状态）
 --   员工表：2个（岗位、状态）
---   库存表：1个（数量）
+--   库存表：2个（数量、更新人）
 --   订单表：4个（会员ID、收银员ID、时间、状态）
 --   订单明细表：0个（外键已自动建索引）
 -- 另有：6个主键索引 + 4个唯一约束索引 = 10个自动创建索引
--- 总计：24个索引
+-- 总计：25个索引
 -- ============================================================
