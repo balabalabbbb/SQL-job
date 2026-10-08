@@ -4,7 +4,7 @@
 -- ============================================================
 -- 执行说明：
 --   1. 以 sa 或具有 CREATE ANY DATABASE / ALTER ANY LOGIN 权限的用户执行
---   2. 创建4个数据库角色：store_manager, cashier, member, guest
+--   2. 创建4个数据库角色：store_manager, cashier, member, customer
 --   3. 按最小权限原则授予各角色权限
 --   4. 创建测试登录名+用户并分配角色
 --   5. 测试正常操作和越权操作
@@ -20,7 +20,7 @@
 --   - store_manager（店长）：全部业务表的读写权限
 --   - cashier（店员）：商品/库存/订单/会员的查询和部分写权限
 --   - member（会员）：商品查询、自己订单查询、自己信息查询
---   - guest（非会员顾客）：商品查询（只读）
+--   - customer（非会员顾客）：商品查询（只读）
 -- ============================================================
 
 USE retail_store;
@@ -47,8 +47,8 @@ IF EXISTS (SELECT * FROM sys.database_role_members drm
 
 IF EXISTS (SELECT * FROM sys.database_role_members drm
            JOIN sys.database_principals dp ON drm.role_principal_id = dp.principal_id
-           WHERE dp.name = 'guest')
-    ALTER ROLE guest DROP MEMBER guest_test;
+           WHERE dp.name = 'customer')
+    ALTER ROLE customer DROP MEMBER guest_test;
 
 -- 删除数据库用户（如果存在）
 IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'manager_test' AND type = 'S')
@@ -77,10 +77,11 @@ IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'cashier' AND type
     DROP ROLE cashier;
 IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'member' AND type = 'R')
     DROP ROLE member;
-IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'guest' AND type = 'R')
-    DROP ROLE guest;
+IF EXISTS (SELECT * FROM sys.database_principals WHERE name = 'customer' AND type = 'R')
+    DROP ROLE customer;
 
 SELECT '=== 旧角色、用户和登录名已清理 ===' AS 准备;
+GO
 
 
 -- ============================================================
@@ -90,9 +91,10 @@ SELECT '=== 旧角色、用户和登录名已清理 ===' AS 准备;
 CREATE ROLE store_manager;
 CREATE ROLE cashier;
 CREATE ROLE member;
-CREATE ROLE guest;
+CREATE ROLE customer;
 
-SELECT '=== 4个角色已创建：store_manager, cashier, member, guest ===' AS 角色创建;
+SELECT '=== 4个角色已创建：store_manager, cashier, member, customer ===' AS 角色创建;
+GO
 
 
 -- ============================================================
@@ -162,13 +164,13 @@ SELECT '=== 会员(member)权限已授予：商品查询/订单查询/明细查�
 
 
 -- ----------------------------------------------------------
--- 角色4：guest（非会员顾客）- 仅商品浏览权限
+-- 角色4：customer（非会员顾客）- 仅商品浏览权限
 -- 职责：浏览商品信息
 -- 限制：不能查看订单、会员、员工、库存等任何敏感数据
 -- ----------------------------------------------------------
-GRANT SELECT ON product TO guest;
+GRANT SELECT ON product TO customer;
 
-SELECT '=== 顾客(guest)权限已授予：仅商品查询（只读）===' AS 权限授予;
+SELECT '=== 顾客(customer)权限已授予：仅商品查询（只读）===' AS 权限授予;
 
 
 -- ============================================================
@@ -191,9 +193,10 @@ CREATE USER guest_test FOR LOGIN guest_test;
 ALTER ROLE store_manager ADD MEMBER manager_test;
 ALTER ROLE cashier ADD MEMBER cashier_test;
 ALTER ROLE member ADD MEMBER member_test;
-ALTER ROLE guest ADD MEMBER guest_test;
+ALTER ROLE customer ADD MEMBER guest_test;
 
 SELECT '=== 4个测试登录名+用户已创建并分配角色 ===' AS 用户创建;
+GO
 
 
 -- ============================================================
@@ -236,14 +239,14 @@ WHERE d.name = 'member' AND dp.class = 1
 ORDER BY 对象名, 权限;
 
 -- 顾客权限
-SELECT '--- guest（顾客）权限 ---' AS 角色;
+SELECT '--- customer（顾客）权限 ---' AS 角色;
 SELECT
     dp.permission_name AS 权限,
     dp.state_desc AS 状态,
     OBJECT_NAME(dp.major_id) AS 对象名
 FROM sys.database_permissions dp
 JOIN sys.database_principals d ON dp.grantee_principal_id = d.principal_id
-WHERE d.name = 'guest' AND dp.class = 1
+WHERE d.name = 'customer' AND dp.class = 1
 ORDER BY 对象名, 权限;
 
 -- 查看角色成员关系
@@ -331,7 +334,7 @@ SELECT
     '店长' AS store_manager,
     '店员' AS cashier,
     '会员' AS member,
-    '顾客' AS guest
+    '顾客' AS customer
 UNION ALL
 SELECT '商品查询', 'Y', 'Y', 'Y', 'Y'
 UNION ALL

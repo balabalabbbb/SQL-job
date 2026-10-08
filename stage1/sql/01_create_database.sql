@@ -16,9 +16,11 @@ IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'retail_store')
 BEGIN
     CREATE DATABASE retail_store;
 END
+GO
 
 -- 选择使用该数据库
 USE retail_store;
+GO
 
 -- 显示数据库创建信息
 SELECT name AS 数据库名, collation_name AS 排序规则, state_desc AS 状态

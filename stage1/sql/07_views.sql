@@ -17,6 +17,7 @@ USE retail_store;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_order_detail;
+GO
 
 CREATE VIEW v_order_detail AS
 SELECT
@@ -43,6 +44,7 @@ INNER JOIN order_item oi ON o.order_id = oi.order_id
 INNER JOIN product p ON oi.product_id = p.product_id
 LEFT JOIN member m ON o.member_id = m.member_id
 INNER JOIN employee e ON o.cashier_id = e.employee_id;
+GO
 
 -- 验证视图1：查询某订单详情
 SELECT '=== 视图1验证：ORD202609150001订单详情 ===' AS 验证;
@@ -59,6 +61,7 @@ ORDER BY item_id;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_product_sales;
+GO
 
 CREATE VIEW v_product_sales AS
 SELECT
@@ -82,6 +85,7 @@ LEFT JOIN (
     FROM order_item
     GROUP BY product_id
 ) sales ON p.product_id = sales.product_id;
+GO
 
 -- 验证视图2：商品销量排行TOP 5
 SELECT '=== 视图2验证：商品销量排行TOP 5 ===' AS 验证;
@@ -104,6 +108,7 @@ ORDER BY product_id;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_inventory_status;
+GO
 
 CREATE VIEW v_inventory_status AS
 SELECT
@@ -131,6 +136,7 @@ SELECT
 FROM product p
 INNER JOIN inventory i ON p.product_id = i.product_id
 LEFT JOIN employee e ON i.last_updated_by = e.employee_id;
+GO
 
 -- 验证视图3：库存预警商品
 SELECT '=== 视图3验证：库存预警商品（缺货/需补货）===' AS 验证;
@@ -163,6 +169,7 @@ FROM v_inventory_status;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_member_sales;
+GO
 
 CREATE VIEW v_member_sales AS
 SELECT
@@ -183,6 +190,7 @@ FROM member m
 LEFT JOIN orders o ON m.member_id = o.member_id
 GROUP BY m.member_id, m.member_name, m.phone, m.member_level,
          m.points_balance, m.total_spent, m.member_status, m.register_time;
+GO
 
 -- 验证视图4：会员消费排行
 SELECT '=== 视图4验证：会员消费排行 ===' AS 验证;
@@ -205,6 +213,7 @@ ORDER BY total_spent_calculated DESC;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_employee_performance;
+GO
 
 CREATE VIEW v_employee_performance AS
 SELECT
@@ -223,6 +232,7 @@ FROM employee e
 LEFT JOIN orders o ON e.employee_id = o.cashier_id
 GROUP BY e.employee_id, e.employee_name, e.position,
          e.employee_status, e.hire_date;
+GO
 
 -- 验证视图5：员工销售业绩排行
 SELECT '=== 视图5验证：员工销售业绩排行 ===' AS 验证;
@@ -238,6 +248,7 @@ ORDER BY total_sales DESC;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_daily_sales;
+GO
 
 CREATE VIEW v_daily_sales AS
 SELECT
@@ -251,6 +262,7 @@ SELECT
     SUM(CASE WHEN member_id IS NULL THEN 1 ELSE 0 END) AS guest_order_count
 FROM orders
 GROUP BY CAST(order_time AS DATE);
+GO
 
 -- 验证视图6：每日销售汇总
 SELECT '=== 视图6验证：每日销售汇总 ===' AS 验证;
@@ -266,6 +278,7 @@ ORDER BY sale_date;
 -- ============================================================
 
 DROP VIEW IF EXISTS v_category_sales;
+GO
 
 CREATE VIEW v_category_sales AS
 SELECT
@@ -283,6 +296,7 @@ SELECT
 FROM product p
 LEFT JOIN order_item oi ON p.product_id = oi.product_id
 GROUP BY p.category;
+GO
 
 -- 验证视图7：分类销售统计
 SELECT '=== 视图7验证：分类销售统计及占比 ===' AS 验证;
