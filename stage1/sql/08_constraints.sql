@@ -1,9 +1,9 @@
 -- ============================================================
--- constraint.sql
--- 小卖部管理系统 - 完整性约束验证脚本
+-- 08_constraints.sql
+-- 小卖部管理系统 - 完整性约束验证脚本 (SQL Server 版本)
 -- ============================================================
 -- 执行说明：
---   1. 先执行 week3 的 01-03 脚本完成建库、建表、插数
+--   1. 先执行 01-03 脚本完成建库、建表、插数
 --   2. 执行本脚本验证各类完整性约束
 --   3. 正例实际执行并展示成功结果
 --   4. 反例以注释形式展示，手动取消注释可验证报错
@@ -29,8 +29,8 @@ SELECT
     TABLE_NAME AS 表名,
     CONSTRAINT_NAME AS 约束名,
     CONSTRAINT_TYPE AS 约束类型
-FROM information_schema.TABLE_CONSTRAINTS
-WHERE TABLE_SCHEMA = 'retail_store'
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+WHERE TABLE_CATALOG = 'retail_store'
 ORDER BY TABLE_NAME, CONSTRAINT_TYPE;
 
 
@@ -48,17 +48,17 @@ SELECT '插入成功，主码P9999唯一' AS 结果;
 
 -- 反例1：主码重复，插入失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1062 (23000): Duplicate entry 'P9999' for key 'product.PRIMARY'
+-- Violation of PRIMARY KEY constraint 'PK__product__...'. Cannot insert duplicate key in object 'dbo.product'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9999', '测试商品-主码重复', '食品', 5.00, 3.00, '个', '在售');
-SELECT '反例1：主码重复 → 预期报错 Duplicate entry（已注释，手动验证）' AS 反例说明;
+SELECT '反例1：主码重复 → 预期报错 Violation of PRIMARY KEY（已注释，手动验证）' AS 反例说明;
 
 -- 反例2：主码为空，插入失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1048 (23000): Column 'product_id' cannot be null
+-- Cannot insert the value NULL into column 'product_id', table 'retail_store.dbo.product'; column does not allow nulls.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES (NULL, '测试商品-主码为空', '食品', 5.00, 3.00, '个', '在售');
-SELECT '反例2：主码为空 → 预期报错 Column cannot be null（已注释，手动验证）' AS 反例说明;
+SELECT '反例2：主码为空 → 预期报错 Cannot insert NULL（已注释，手动验证）' AS 反例说明;
 
 -- 清理测试数据
 DELETE FROM product WHERE product_id = 'P9999';
@@ -83,16 +83,16 @@ SELECT '插入成功，product_id=P9998存在于product表' AS 结果;
 
 -- 反例1：外码值不存在于被引用表，插入失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails
+-- The INSERT statement conflicted with the FOREIGN KEY constraint 'fk_inventory_product'.
 -- INSERT INTO inventory (product_id, quantity, shelf_location, min_threshold, last_updated_by)
 -- VALUES ('P8888', 100, 'TEST-02', 10, 1);
-SELECT '反例1：外码引用不存在 → 预期报错 foreign key constraint fails（已注释，手动验证）' AS 反例说明;
+SELECT '反例1：外码引用不存在 → 预期报错 FOREIGN KEY conflict（已注释，手动验证）' AS 反例说明;
 
 -- 反例2：删除被外码引用的记录，删除失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails
+-- The DELETE statement conflicted with the REFERENCE constraint 'fk_inventory_product'.
 -- DELETE FROM product WHERE product_id = 'P0001';
-SELECT '反例2：删除被引用记录 → 预期报错 foreign key constraint fails（已注释，手动验证）' AS 反例说明;
+SELECT '反例2：删除被引用记录 → 预期报错 REFERENCE constraint（已注释，手动验证）' AS 反例说明;
 
 -- 清理测试数据
 DELETE FROM inventory WHERE shelf_location = 'TEST-01';
@@ -114,17 +114,17 @@ SELECT '插入成功，手机号13999999999唯一' AS 结果;
 
 -- 反例1：手机号重复，插入失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1062 (23000): Duplicate entry '13999999999' for key 'member.uk_member_phone'
+-- Violation of UNIQUE KEY constraint 'uk_member_phone'. Cannot insert duplicate key.
 -- INSERT INTO member (member_id, member_name, phone, member_level, member_status)
 -- VALUES ('M9998', '测试会员-重复手机号', '13999999999', '普通', '正常');
-SELECT '反例1：手机号重复 → 预期报错 Duplicate entry uk_member_phone（已注释，手动验证）' AS 反例说明;
+SELECT '反例1：手机号重复 → 预期报错 Violation of UNIQUE KEY（已注释，手动验证）' AS 反例说明;
 
 -- 反例2：员工登录账号重复，插入失败
 -- 取消下面注释执行，预期报错：
--- ERROR 1062 (23000): Duplicate entry 'cashier01' for key 'employee.uk_employee_account'
+-- Violation of UNIQUE KEY constraint 'uk_employee_account'. Cannot insert duplicate key.
 -- INSERT INTO employee (employee_name, position, login_account, login_password, hire_date, employee_status)
 -- VALUES ('测试员工', '店员', 'cashier01', 'hashedpassword', '2026-01-01', '在职');
-SELECT '反例2：登录账号重复 → 预期报错 Duplicate entry uk_employee_account（已注释，手动验证）' AS 反例说明;
+SELECT '反例2：登录账号重复 → 预期报错 Violation of UNIQUE KEY（已注释，手动验证）' AS 反例说明;
 
 -- 清理测试数据
 DELETE FROM member WHERE member_id = 'M9999';
@@ -148,67 +148,67 @@ SELECT '插入成功' AS 结果;
 
 -- 反例1：售价为负
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_product_sale_price' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_product_sale_price'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9996', '测试商品-售价负', '食品', -5.00, 3.00, '个', '在售');
-SELECT '反例1：售价为负 → 预期报错 chk_product_sale_price violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例1：售价为负 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 反例2：进价>售价
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_product_price_relation' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_product_price_relation'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9995', '测试商品-进价大于售价', '食品', 3.00, 10.00, '个', '在售');
-SELECT '反例2：进价>售价 → 预期报错 chk_product_price_relation violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例2：进价>售价 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 5.2 商品分类检查
 SELECT '--- 5.2 商品分类枚举检查 ---' AS 子测试;
 
 -- 反例：分类不在枚举范围内
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_product_category' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_product_category'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9994', '测试商品-非法分类', '电子产品', 100.00, 50.00, '个', '在售');
-SELECT '反例：分类不在枚举范围 → 预期报错 chk_product_category violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例：分类不在枚举范围 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 5.3 商品状态检查
 SELECT '--- 5.3 商品状态枚举检查 ---' AS 子测试;
 
 -- 反例：状态不在枚举范围内
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_product_status' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_product_status'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9993', '测试商品-非法状态', '食品', 10.00, 5.00, '个', '暂停销售');
-SELECT '反例：状态不在枚举范围 → 预期报错 chk_product_status violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例：状态不在枚举范围 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 5.4 会员手机号格式检查
 SELECT '--- 5.4 会员手机号格式检查 ---' AS 子测试;
 
 -- 反例：手机号格式不正确（不是1开头的11位数字）
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_member_phone_format' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_member_phone_format'.
 -- INSERT INTO member (member_id, member_name, phone, member_level, member_status)
 -- VALUES ('M9997', '测试会员-手机号格式错', '12345', '普通', '正常');
-SELECT '反例：手机号格式错误 → 预期报错 chk_member_phone_format violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例：手机号格式错误 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 5.5 订单金额检查
 SELECT '--- 5.5 订单金额检查 ---' AS 子测试;
 
 -- 反例：订单总金额为负
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_orders_total_amount' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_orders_total_amount'.
 -- INSERT INTO orders (order_id, order_time, total_amount, payment_method, order_status, cashier_id)
 -- VALUES ('ORDTEST001', '2026-09-20 10:00:00', -50.00, '微信', '已支付', 1);
-SELECT '反例：订单金额为负 → 预期报错 chk_orders_total_amount violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例：订单金额为负 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 5.6 订单明细计算检查
 SELECT '--- 5.6 订单明细计算检查 ---' AS 子测试;
 
 -- 反例：小计金额不等于数量×单价
 -- 取消下面注释执行，预期报错：
--- ERROR 3819 (HY000): Check constraint 'chk_order_item_calc' is violated
+-- The INSERT statement conflicted with the CHECK constraint 'chk_order_item_calc'.
 -- INSERT INTO order_item (order_id, product_id, quantity, unit_price, subtotal)
 -- VALUES ('ORD202609150001', 'P0003', 2, 2.00, 100.00);
-SELECT '反例：小计金额计算错误 → 预期报错 chk_order_item_calc violated（已注释，手动验证）' AS 反例说明;
+SELECT '反例：小计金额计算错误 → 预期报错 CHECK constraint violated（已注释，手动验证）' AS 反例说明;
 
 -- 清理测试数据
 DELETE FROM product WHERE product_id IN ('P9997', 'P9996', 'P9995', 'P9994', 'P9993');
@@ -234,7 +234,7 @@ FROM product WHERE product_id = 'P9992';
 SELECT '--- 正例2：订单时间使用默认值 ---' AS 测试;
 INSERT INTO orders (order_id, total_amount, payment_method, order_status, cashier_id)
 VALUES ('ORDTEST002', 20.00, '现金', '已支付', 1);
--- order_time字段未指定，应使用默认值CURRENT_TIMESTAMP
+-- order_time字段未指定，应使用默认值GETDATE()
 
 SELECT order_id, order_time AS 默认下单时间, total_amount
 FROM orders WHERE order_id = 'ORDTEST002';
@@ -253,24 +253,24 @@ SELECT '=== 非空约束验证 ===' AS 约束类型;
 
 -- 反例1：商品名称为空
 -- 取消下面注释执行，预期报错：
--- ERROR 1048 (23000): Column 'product_name' cannot be null
+-- Cannot insert the value NULL into column 'product_name', table 'retail_store.dbo.product'.
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status)
 -- VALUES ('P9991', NULL, '食品', 10.00, 5.00, '个', '在售');
-SELECT '反例1：商品名称为空 → 预期报错 Column cannot be null（已注释，手动验证）' AS 反例说明;
+SELECT '反例1：商品名称为空 → 预期报错 Cannot insert NULL（已注释，手动验证）' AS 反例说明;
 
 -- 反例2：会员姓名为空
 -- 取消下面注释执行，预期报错：
--- ERROR 1048 (23000): Column 'member_name' cannot be null
+-- Cannot insert the value NULL into column 'member_name', table 'retail_store.dbo.member'.
 -- INSERT INTO member (member_id, member_name, phone, member_level, member_status)
 -- VALUES ('M9996', NULL, '13888888888', '普通', '正常');
-SELECT '反例2：会员姓名为空 → 预期报错 Column cannot be null（已注释，手动验证）' AS 反例说明;
+SELECT '反例2：会员姓名为空 → 预期报错 Cannot insert NULL（已注释，手动验证）' AS 反例说明;
 
 -- 反例3：订单支付方式为空
 -- 取消下面注释执行，预期报错：
--- ERROR 1048 (23000): Column 'payment_method' cannot be null
+-- Cannot insert the value NULL into column 'payment_method', table 'retail_store.dbo.orders'.
 -- INSERT INTO orders (order_id, total_amount, payment_method, order_status, cashier_id)
 -- VALUES ('ORDTEST003', 20.00, NULL, '已支付', 1);
-SELECT '反例3：支付方式为空 → 预期报错 Column cannot be null（已注释，手动验证）' AS 反例说明;
+SELECT '反例3：支付方式为空 → 预期报错 Cannot insert NULL（已注释，手动验证）' AS 反例说明;
 
 
 -- ============================================================

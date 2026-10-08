@@ -8,7 +8,7 @@
 |---|---|
 | 场景 | 校园小卖部 |
 | 核心对象 | 商品、库存、订单、订单明细、会员、员工（6张表，49字段） |
-| 数据库 | MySQL 8.0+，utf8mb4 |
+| 数据库 | SQL Server 2019+ |
 | 小组 | 胡海博（组长）、胡懿桓、林一 |
 | 仓库 | https://github.com/balabalabbbb/SQL-job |
 
@@ -24,7 +24,7 @@
 ## 第一阶段快速入口
 
 - **SQL脚本**：[stage1/sql/](stage1/sql/) — 9个脚本按执行顺序编号
-- **执行结果**：[stage1/result/](stage1/result/) — 本地MySQL实际输出 + 10张操作截图
+- **执行结果**：[stage1/result/](stage1/result/) — 本地实际执行输出 + 操作截图（注：截图为MySQL环境下历史记录，脚本已迁移至SQL Server）
 - **阶段报告**：[stage1/第一阶段报告.md](stage1/第一阶段报告.md)
 - **AI使用记录**：[stage1/AI使用记录.md](stage1/AI使用记录.md)
 - **小组分工**：[stage1/小组分工报告.md](stage1/小组分工报告.md)
@@ -32,14 +32,15 @@
 ### v0.1 一键复现
 
 ```bash
-mysql -u root -p < stage1/week3/01_create_database.sql
-mysql -u root -p retail_store < stage1/week3/02_create_tables.sql
-mysql -u root -p retail_store < stage1/week3/03_insert_sample_data.sql
-mysql -u root -p retail_store < stage1/week3/05_index_optimization.sql
-mysql -u root -p retail_store < stage1/week4/query.sql
-mysql -u root -p retail_store < stage1/week4/view.sql
-mysql -u root -p retail_store < stage1/week4/constraint.sql
-mysql -u root -p retail_store < stage1/week4/role.sql
+# 使用 sqlcmd 执行（SQL Server 身份验证，替换为你的服务器和账号）
+sqlcmd -S localhost -U sa -P your_password -i stage1/week3/01_create_database.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week3/02_create_tables.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week3/03_insert_sample_data.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week3/05_index_optimization.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week4/query.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week4/view.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week4/constraint.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i stage1/week4/role.sql
 ```
 
 ## 第二阶段快速入口

@@ -1,6 +1,6 @@
 # 第一阶段：可运行的数据库原型 v0.1
 
-> 第1-4周 | 完成时间：2026-09-23 | 验证环境：MySQL 8.0.28 / Windows
+> 第1-4周 | 完成时间：2026-09-23 | 验证环境：SQL Server 2019+ / Windows（脚本已从MySQL迁移至SQL Server）
 
 ## 项目范围
 
@@ -45,9 +45,9 @@
 
 ## 环境要求
 
-- 数据库管理系统：MySQL 8.0+（支持CHECK约束，推荐8.0.16及以上）
+- 数据库管理系统：SQL Server 2019+（支持 CHECK 约束、STRING_AGG 等特性）
 - 操作系统：Windows / Linux / macOS
-- 字符集：utf8mb4
+- 身份验证：SQL Server 身份验证（sa 或具有 CREATE DATABASE 权限的账号）
 
 ## 整体链路
 
@@ -80,7 +80,7 @@ stage1/
 │   ├── 08_constraints.sql
 │   ├── 09_roles.sql
 │   └── README.md
-├── result/                      # 执行结果（本地MySQL实际输出+截图）
+├── result/                      # 执行结果（本地实际输出+截图，注：截图为MySQL环境历史记录）
 │   ├── 01-10_*.txt
 │   ├── screenshots/             # 10张操作截图
 │   └── README.md
@@ -125,11 +125,12 @@ stage1/
 按顺序执行以下SQL脚本：
 
 ```bash
-mysql -u root -p < week3/01_create_database.sql
-mysql -u root -p retail_store < week3/02_create_tables.sql
-mysql -u root -p retail_store < week3/03_insert_sample_data.sql
-mysql -u root -p retail_store < week3/04_crud_operations.sql
-mysql -u root -p retail_store < week3/05_index_optimization.sql
+# 使用 sqlcmd 执行（替换为你的服务器、用户名和密码）
+sqlcmd -S localhost -U sa -P your_password -i week3/01_create_database.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/02_create_tables.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/03_insert_sample_data.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/04_crud_operations.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/05_index_optimization.sql
 ```
 
 详细说明请参考 `week3/复现说明.md`。
@@ -137,10 +138,10 @@ mysql -u root -p retail_store < week3/05_index_optimization.sql
 ### 第四周（连接查询、视图、完整性与授权）
 
 ```bash
-mysql -u root -p retail_store < week4/query.sql
-mysql -u root -p retail_store < week4/view.sql
-mysql -u root -p retail_store < week4/constraint.sql
-mysql -u root -p retail_store < week4/role.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/query.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/view.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/constraint.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/role.sql
 ```
 
 **注意**：
@@ -152,14 +153,14 @@ mysql -u root -p retail_store < week4/role.sql
 从空数据库开始，依次执行：
 
 ```bash
-mysql -u root -p < week3/01_create_database.sql
-mysql -u root -p retail_store < week3/02_create_tables.sql
-mysql -u root -p retail_store < week3/03_insert_sample_data.sql
-mysql -u root -p retail_store < week3/05_index_optimization.sql
-mysql -u root -p retail_store < week4/query.sql
-mysql -u root -p retail_store < week4/view.sql
-mysql -u root -p retail_store < week4/constraint.sql
-mysql -u root -p retail_store < week4/role.sql
+sqlcmd -S localhost -U sa -P your_password -i week3/01_create_database.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/02_create_tables.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/03_insert_sample_data.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week3/05_index_optimization.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/query.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/view.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/constraint.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i week4/role.sql
 ```
 
 执行完成后，数据库包含：
@@ -193,5 +194,5 @@ mysql -u root -p retail_store < week4/role.sql
 
 - **版本**：v0.1（第一阶段完成）
 - **完成时间**：2026-09-23
-- **验证环境**：MySQL 8.0.28 / Windows
-- **验证状态**：所有脚本在本地MySQL环境执行通过，可完整复现
+- **验证环境**：SQL Server 2019+ / Windows（脚本已从MySQL 8.0.28迁移至SQL Server）
+- **验证状态**：所有脚本已转换为SQL Server语法，可在SQL Server环境完整复现

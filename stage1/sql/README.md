@@ -6,7 +6,7 @@
 
 | 序号 | 文件名 | 说明 | 对应周次 |
 |---|---|---|---|
-| 01 | `01_create_database.sql` | 创建数据库 retail_store，设置 utf8mb4 字符集 | 第三周 |
+| 01 | `01_create_database.sql` | 创建数据库 retail_store | 第三周 |
 | 02 | `02_create_tables.sql` | 创建6张表，含主码/外码/唯一/CHECK等全部约束 | 第三周 |
 | 03 | `03_insert_sample_data.sql` | 插入58条样例数据（商品10/会员5/员工3/库存10/订单10/明细20） | 第三周 |
 | 04 | `04_crud_operations.sql` | 增删改查操作演示，含事务处理和数据恢复说明 | 第三周 |
@@ -19,32 +19,33 @@
 ## 执行顺序
 
 ```bash
+# 使用 sqlcmd 执行（替换为你的服务器地址、用户名和密码）
 # 1. 建库
-mysql -u root -p < 01_create_database.sql
+sqlcmd -S localhost -U sa -P your_password -i 01_create_database.sql
 
 # 2. 建表
-mysql -u root -p retail_store < 02_create_tables.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 02_create_tables.sql
 
 # 3. 插数
-mysql -u root -p retail_store < 03_insert_sample_data.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 03_insert_sample_data.sql
 
 # 4. CRUD演示（可选，会修改数据）
-mysql -u root -p retail_store < 04_crud_operations.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 04_crud_operations.sql
 
 # 5. 索引优化（可选）
-mysql -u root -p retail_store < 05_index_optimization.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 05_index_optimization.sql
 
 # 6. 多表查询
-mysql -u root -p retail_store < 06_queries.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 06_queries.sql
 
 # 7. 统计视图
-mysql -u root -p retail_store < 07_views.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 07_views.sql
 
 # 8. 约束验证
-mysql -u root -p retail_store < 08_constraints.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 08_constraints.sql
 
 # 9. 角色权限
-mysql -u root -p retail_store < 09_roles.sql
+sqlcmd -S localhost -U sa -P your_password -d retail_store -i 09_roles.sql
 ```
 
 ## 注意事项

@@ -1,9 +1,9 @@
 -- ============================================================
 -- 01_create_database.sql
--- 小卖部管理系统 - 数据库创建脚本
+-- 小卖部管理系统 - 数据库创建脚本 (SQL Server 版本)
 -- ============================================================
 -- 执行说明：
---   1. 以root或具有CREATE DATABASE权限的用户登录MySQL
+--   1. 以 sa 或具有 CREATE DATABASE 权限的用户登录 SQL Server
 --   2. 执行本脚本创建数据库
 --   3. 然后执行 02_create_tables.sql 创建表结构
 -- ============================================================
@@ -12,15 +12,18 @@
 -- DROP DATABASE IF EXISTS retail_store;
 
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS retail_store
-    DEFAULT CHARACTER SET utf8mb4
-    DEFAULT COLLATE utf8mb4_unicode_ci;
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'retail_store')
+BEGIN
+    CREATE DATABASE retail_store;
+END
 
 -- 选择使用该数据库
 USE retail_store;
 
 -- 显示数据库创建信息
-SHOW CREATE DATABASE retail_store;
+SELECT name AS 数据库名, collation_name AS 排序规则, state_desc AS 状态
+FROM sys.databases
+WHERE name = 'retail_store';
 
 -- ============================================================
 -- 数据库创建完成

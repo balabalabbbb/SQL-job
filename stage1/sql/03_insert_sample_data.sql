@@ -1,18 +1,18 @@
 -- ============================================================
 -- 03_insert_sample_data.sql
--- 小卖部管理系统 - 样例数据插入脚本
+-- 小卖部管理系统 - 样例数据插入脚本 (SQL Server 版本)
 -- ============================================================
 -- 执行说明：
 --   1. 先执行 01_create_database.sql 和 02_create_tables.sql
 --   2. 执行本脚本插入样例数据
 --   3. 插入顺序：先插入被外键引用的表，再插入引用表
---   4. 本脚本包含更多样例数据，便于后续查询和测试
+--   4. 含自增列(IDENTITY)的表插入指定ID时需开启 IDENTITY_INSERT
 -- ============================================================
 
 USE retail_store;
 
 -- ============================================================
--- 1. 插入商品数据 product
+-- 1. 插入商品数据 product（无自增列）
 -- ============================================================
 
 INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, supplier, production_date, shelf_life_days, status) VALUES
@@ -28,7 +28,7 @@ INSERT INTO product (product_id, product_name, category, sale_price, purchase_pr
 ('P0010', '统一冰红茶500ml',     '饮料', 3.50,  1.80, '瓶', '统一企业',   '2026-08-20', 365, '下架');
 
 -- ============================================================
--- 2. 插入会员数据 member
+-- 2. 插入会员数据 member（无自增列）
 -- ============================================================
 
 INSERT INTO member (member_id, member_name, phone, register_time, points_balance, member_level, total_spent, last_purchase_time, member_status) VALUES
@@ -39,19 +39,25 @@ INSERT INTO member (member_id, member_name, phone, register_time, points_balance
 ('M0005', '钱七', '13500135005', '2026-04-18 11:00:00', 560,  '银卡', 560.00,  '2026-09-12 17:45:00', '冻结');
 
 -- ============================================================
--- 3. 插入员工数据 employee
+-- 3. 插入员工数据 employee（含自增列 employee_id）
 -- ============================================================
 -- 注意：login_password字段存储的是bcrypt哈希值，以下为示例哈希
 -- 实际使用时应通过程序生成真实哈希，严禁明文存储
+
+SET IDENTITY_INSERT employee ON;
 
 INSERT INTO employee (employee_id, employee_name, position, login_account, login_password, phone, hire_date, employee_status, last_login_time) VALUES
 (1, '赵店长', '店长', 'manager01', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '13600136001', '2024-09-01', '在职', '2026-09-15 08:00:00'),
 (2, '钱店员', '店员', 'cashier01', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '13500135002', '2025-03-15', '在职', '2026-09-15 07:55:00'),
 (3, '孙店员', '店员', 'cashier02', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '13400134003', '2026-06-01', '休假', '2026-09-10 18:00:00');
 
+SET IDENTITY_INSERT employee OFF;
+
 -- ============================================================
--- 4. 插入库存数据 inventory
+-- 4. 插入库存数据 inventory（含自增列 inventory_id）
 -- ============================================================
+
+SET IDENTITY_INSERT inventory ON;
 
 INSERT INTO inventory (inventory_id, product_id, quantity, shelf_location, min_threshold, last_updated, last_updated_by) VALUES
 (1,  'P0001', 48,  'A-02', 20, '2026-09-15 14:30:00', 2),
@@ -65,8 +71,10 @@ INSERT INTO inventory (inventory_id, product_id, quantity, shelf_location, min_t
 (9,  'P0009', 0,   'C-01', 5,  '2026-09-08 14:00:00', 1),
 (10, 'P0010', 0,   'A-04', 15, '2026-09-05 10:00:00', 1);
 
+SET IDENTITY_INSERT inventory OFF;
+
 -- ============================================================
--- 5. 插入订单数据 orders
+-- 5. 插入订单数据 orders（无自增列）
 -- ============================================================
 
 INSERT INTO orders (order_id, order_time, total_amount, payment_method, order_status, member_id, cashier_id, remark) VALUES
@@ -82,10 +90,12 @@ INSERT INTO orders (order_id, order_time, total_amount, payment_method, order_st
 ('ORD202609150006', '2026-09-15 15:55:10', 23.00, '支付宝', '已支付', 'M0003', 1, NULL);
 
 -- ============================================================
--- 6. 插入订单明细数据 order_item
+-- 6. 插入订单明细数据 order_item（含自增列 item_id）
 -- ============================================================
 -- 注意：subtotal = quantity * unit_price
 -- unit_price记录成交时单价，可能与商品当前售价不同
+
+SET IDENTITY_INSERT order_item ON;
 
 INSERT INTO order_item (item_id, order_id, product_id, quantity, unit_price, subtotal) VALUES
 -- 订单ORD202609100001：纯牛奶2盒
@@ -118,6 +128,8 @@ INSERT INTO order_item (item_id, order_id, product_id, quantity, unit_price, sub
 (18, 'ORD202609150006', 'P0005', 2, 6.50, 13.00),
 (19, 'ORD202609150006', 'P0001', 2, 3.50, 7.00),
 (20, 'ORD202609150006', 'P0004', 1, 2.00, 2.00);
+
+SET IDENTITY_INSERT order_item OFF;
 
 -- ============================================================
 -- 验证：统计各表数据量

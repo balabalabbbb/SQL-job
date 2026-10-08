@@ -1,6 +1,6 @@
 -- ============================================================
 -- 04_crud_operations.sql
--- 小卖部管理系统 - 增删改查（CRUD）操作脚本
+-- 小卖部管理系统 - 增删改查（CRUD）操作脚本 (SQL Server 版本)
 -- ============================================================
 -- 执行说明：
 --   1. 先执行 01_create_database.sql、02_create_tables.sql、03_insert_sample_data.sql
@@ -8,7 +8,7 @@
 --   3. 每个操作前都有SELECT验证目标行，修改/删除后有结果验证
 --   4. DELETE和UPDATE操作前先用相同条件SELECT确认目标
 --
--- ⚠️  重要提示：
+-- 重要提示：
 --   本脚本包含INSERT、UPDATE、DELETE操作，执行后会修改和删除样例数据！
 --   执行后数据库状态将发生以下变化：
 --     - 商品表：新增P0011后又被删除，最终商品数恢复为10
@@ -16,19 +16,17 @@
 --     - 订单表：新增ORD202609160001后又被删除，最终订单数恢复为10
 --     - 订单明细表：新增3条明细后又被删除，最终明细数恢复为20
 --
--- 🔄 数据恢复方法：
+-- 数据恢复方法：
 --   如需恢复原始样例数据，请按顺序重新执行以下脚本：
 --     1. 02_create_tables.sql  （删除并重建所有表，会清空所有数据）
 --     2. 03_insert_sample_data.sql  （重新插入58条样例数据）
---   或者执行以下SQL快速恢复：
---     SET FOREIGN_KEY_CHECKS = 0;
---     TRUNCATE TABLE order_item;
---     TRUNCATE TABLE orders;
---     TRUNCATE TABLE inventory;
---     TRUNCATE TABLE employee;
---     TRUNCATE TABLE member;
---     TRUNCATE TABLE product;
---     SET FOREIGN_KEY_CHECKS = 1;
+--   或者按外键依赖反序DELETE后重新插入：
+--     DELETE FROM order_item;
+--     DELETE FROM orders;
+--     DELETE FROM inventory;
+--     DELETE FROM employee;
+--     DELETE FROM member;
+--     DELETE FROM product;
 --     -- 然后重新执行 03_insert_sample_data.sql
 -- ============================================================
 
@@ -136,7 +134,6 @@ SELECT COUNT(*) AS 商品P0011数量 FROM product WHERE product_id = 'P0011';
 -- C (Create) - 插入新库存记录
 -- ----------------------------------------------------------
 
--- 操作前：查看P0011商品是否有库存（之前已删除商品，这里用已有商品演示）
 -- 先重新插入P0011商品用于库存演示
 INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, supplier, production_date, shelf_life_days, status)
 VALUES ('P0011', '旺仔牛奶125ml', '饮料', 2.50, 1.20, '盒', '旺旺集团', '2026-08-25', 270, '在售');
@@ -235,7 +232,7 @@ SELECT COUNT(*) AS 订单总数 FROM orders;
 
 -- 创建新订单（注意：先插入订单主表，再插入订单明细）
 -- 使用事务保证订单主表与明细的一致性，任何一步失败则全部回滚
-START TRANSACTION;
+BEGIN TRANSACTION;
 
 INSERT INTO orders (order_id, order_time, total_amount, payment_method, order_status, member_id, cashier_id, remark)
 VALUES ('ORD202609160001', '2026-09-16 14:30:00', 14.00, '微信', '已支付', 'M0001', 2, '测试订单');
@@ -248,7 +245,7 @@ VALUES
 ('ORD202609160001', 'P0004', 2, 2.00, 4.00);
 
 -- 提交事务（如果以上任何一步出错，应执行ROLLBACK回滚）
-COMMIT;
+COMMIT TRANSACTION;
 
 -- 操作后：查看新订单及其明细（连接查询）
 SELECT '=== 创建新订单后：订单主表信息 ===' AS 操作;
@@ -309,8 +306,8 @@ GROUP BY payment_method
 ORDER BY 总金额 DESC;
 
 -- 查询3：查询销售额最高的商品（按销售数量和金额排序）
-SELECT '=== 查询3：商品销量排行 ===' AS 操作;
-SELECT
+SELECT '=== 查询3：商品销量排行 TOP 5 ===' AS 操作;
+SELECT TOP 5
     p.product_id,
     p.product_name,
     p.category,
@@ -321,8 +318,7 @@ JOIN product p ON oi.product_id = p.product_id
 JOIN orders o ON oi.order_id = o.order_id
 WHERE o.order_status = '已支付'
 GROUP BY p.product_id, p.product_name, p.category
-ORDER BY 销售总金额 DESC
-LIMIT 5;
+ORDER BY 销售总金额 DESC;
 
 -- ----------------------------------------------------------
 -- U (Update) - 修改订单（模拟修改订单备注和支付方式）
@@ -356,7 +352,7 @@ GROUP BY o.order_id, o.total_amount;
 
 -- 注意：删除订单前必须先删除订单明细（因为order_item有外键引用orders）
 -- 使用事务保证删除操作的原子性，明细和主表要么全部删除，要么都不删
-START TRANSACTION;
+BEGIN TRANSACTION;
 
 -- 先删除订单明细
 DELETE FROM order_item WHERE order_id = 'ORD202609160001';
@@ -365,7 +361,7 @@ DELETE FROM order_item WHERE order_id = 'ORD202609160001';
 DELETE FROM orders WHERE order_id = 'ORD202609160001';
 
 -- 提交事务
-COMMIT;
+COMMIT TRANSACTION;
 
 -- 操作后：验证删除结果
 SELECT '=== 删除订单后：验证订单已删除 ===' AS 操作;
@@ -381,25 +377,25 @@ SELECT COUNT(*) AS 明细ORD202609160001数量 FROM order_item WHERE order_id = 
 
 -- 验证1：外键约束 - 插入引用不存在商品的库存（应失败）
 SELECT '=== 验证1：外键约束（引用不存在的商品）===' AS 操作;
--- 以下语句会报错：Cannot add or update a child row: a foreign key constraint fails
+-- 以下语句会报错：The INSERT statement conflicted with the FOREIGN KEY constraint
 -- INSERT INTO inventory (product_id, quantity, last_updated_by) VALUES ('P9999', 10, 1);
 SELECT '尝试插入product_id=P9999的库存会因外键约束失败' AS 验证结果;
 
 -- 验证2：唯一约束 - 插入重复手机号的会员（应失败）
 SELECT '=== 验证2：唯一约束（重复手机号）===' AS 操作;
--- 以下语句会报错：Duplicate entry '13800138001' for key 'uk_member_phone'
+-- 以下语句会报错：Violation of UNIQUE KEY constraint 'uk_member_phone'
 -- INSERT INTO member (member_id, member_name, phone) VALUES ('M0099', '测试', '13800138001');
 SELECT '尝试插入手机号13800138001的会员会因唯一约束失败' AS 验证结果;
 
 -- 验证3：检查约束 - 插入负价格的商品（应失败）
 SELECT '=== 验证3：检查约束（负价格）===' AS 操作;
--- 以下语句会报错：Check constraint 'chk_product_sale_price' is violated
+-- 以下语句会报错：The INSERT statement conflicted with the CHECK constraint 'chk_product_sale_price'
 -- INSERT INTO product (product_id, product_name, category, sale_price, purchase_price, unit, status) VALUES ('P0099', '测试', '饮料', -1.00, 0.50, '瓶', '在售');
 SELECT '尝试插入售价为负的商品会因检查约束失败' AS 验证结果;
 
 -- 验证4：非空约束 - 插入缺少商品名称的商品（应失败）
 SELECT '=== 验证4：非空约束（缺少必填字段）===' AS 操作;
--- 以下语句会报错：Field 'product_name' doesn't have a default value
+-- 以下语句会报错：Cannot insert the value NULL into column 'product_name'
 -- INSERT INTO product (product_id, category, sale_price, purchase_price, unit, status) VALUES ('P0099', '饮料', 1.00, 0.50, '瓶', '在售');
 SELECT '尝试插入缺少商品名称的商品会因非空约束失败' AS 验证结果;
 

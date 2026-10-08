@@ -1,9 +1,9 @@
 -- ============================================================
--- view.sql
--- 小卖部管理系统 - 统计视图创建与验证脚本
+-- 07_views.sql
+-- 小卖部管理系统 - 统计视图创建与验证脚本 (SQL Server 版本)
 -- ============================================================
 -- 执行说明：
---   1. 先执行 week3 的 01-03 脚本完成建库、建表、插数
+--   1. 先执行 01-03 脚本完成建库、建表、插数
 --   2. 执行本脚本创建统计视图并验证
 --   3. 视图封装了常用的复杂查询，便于重复使用
 -- ============================================================
@@ -85,10 +85,9 @@ LEFT JOIN (
 
 -- 验证视图2：商品销量排行TOP 5
 SELECT '=== 视图2验证：商品销量排行TOP 5 ===' AS 验证;
-SELECT product_name, category, total_quantity, total_amount, gross_profit
+SELECT TOP 5 product_name, category, total_quantity, total_amount, gross_profit
 FROM v_product_sales
-ORDER BY total_quantity DESC
-LIMIT 5;
+ORDER BY total_quantity DESC;
 
 -- 验证视图2：未销售商品
 SELECT '=== 视图2验证：从未销售的商品 ===' AS 验证;
@@ -179,7 +178,7 @@ SELECT
     COALESCE(SUM(o.total_amount), 0) AS total_spent_calculated,
     COALESCE(AVG(o.total_amount), 0) AS avg_order_amount,
     MAX(o.order_time)       AS last_purchase_time,
-    DATEDIFF(CURDATE(), MAX(o.order_time)) AS days_since_last_purchase
+    DATEDIFF(day, MAX(o.order_time), GETDATE()) AS days_since_last_purchase
 FROM member m
 LEFT JOIN orders o ON m.member_id = o.member_id
 GROUP BY m.member_id, m.member_name, m.phone, m.member_level,
@@ -242,7 +241,7 @@ DROP VIEW IF EXISTS v_daily_sales;
 
 CREATE VIEW v_daily_sales AS
 SELECT
-    DATE(order_time)        AS sale_date,
+    CAST(order_time AS DATE) AS sale_date,
     COUNT(*)                AS order_count,
     SUM(total_amount)       AS total_sales,
     AVG(total_amount)       AS avg_order_value,
@@ -251,7 +250,7 @@ SELECT
     COUNT(DISTINCT member_id) AS member_order_count,
     SUM(CASE WHEN member_id IS NULL THEN 1 ELSE 0 END) AS guest_order_count
 FROM orders
-GROUP BY DATE(order_time);
+GROUP BY CAST(order_time AS DATE);
 
 -- 验证视图6：每日销售汇总
 SELECT '=== 视图6验证：每日销售汇总 ===' AS 验证;
@@ -299,10 +298,9 @@ ORDER BY total_sales DESC;
 SELECT '=== 已创建的视图清单 ===' AS 视图管理;
 SELECT
     TABLE_NAME AS 视图名称,
-    IS_UPDATABLE AS 是否可更新,
-    DEFINER AS 定义者
-FROM information_schema.VIEWS
-WHERE TABLE_SCHEMA = 'retail_store'
+    IS_UPDATABLE AS 是否可更新
+FROM INFORMATION_SCHEMA.VIEWS
+WHERE TABLE_CATALOG = 'retail_store'
 ORDER BY TABLE_NAME;
 
 -- ============================================================
