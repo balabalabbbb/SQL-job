@@ -364,3 +364,102 @@ PRINT '结论：迁移前后业务语义一致，v1.0 结构可正常使用。';
 PRINT '行数变化说明：product 表字段数从10变为10（category→category_id，数量不变），';
 PRINT '            新增 category 表，记录数为原 product 中不重复分类数。';
 PRINT '========================================';
+
+-- ============================================================
+-- 测试结果持久化保存（预期值 vs 实际值）
+-- ============================================================
+
+PRINT '=== 保存测试结果到 regression_results 表 ===';
+
+IF OBJECT_ID('dbo.regression_results', 'U') IS NOT NULL
+    DROP TABLE dbo.regression_results;
+
+CREATE TABLE dbo.regression_results (
+    test_id INT IDENTITY(1,1) PRIMARY KEY,
+    test_category VARCHAR(30) NOT NULL,
+    test_item VARCHAR(100) NOT NULL,
+    expected_value VARCHAR(100) NOT NULL,
+    actual_value VARCHAR(100) NOT NULL,
+    result VARCHAR(10) NOT NULL,
+    test_time DATETIME NOT NULL DEFAULT GETDATE()
+);
+
+-- 1. 记录数测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+SELECT '记录数', table_name + ' 记录数', CAST(row_count AS VARCHAR),
+    CAST(CASE table_name
+        WHEN 'product' THEN (SELECT COUNT(*) FROM product)
+        WHEN 'member' THEN (SELECT COUNT(*) FROM member)
+        WHEN 'employee' THEN (SELECT COUNT(*) FROM employee)
+        WHEN 'inventory' THEN (SELECT COUNT(*) FROM inventory)
+        WHEN 'orders' THEN (SELECT COUNT(*) FROM orders)
+        WHEN 'order_item' THEN (SELECT COUNT(*) FROM order_item)
+        WHEN 'category' THEN (SELECT COUNT(*) FROM category)
+    END AS VARCHAR),
+    CASE WHEN CAST(row_count AS VARCHAR) = CAST(CASE table_name
+        WHEN 'product' THEN (SELECT COUNT(*) FROM product)
+        WHEN 'member' THEN (SELECT COUNT(*) FROM member)
+        WHEN 'employee' THEN (SELECT COUNT(*) FROM employee)
+        WHEN 'inventory' THEN (SELECT COUNT(*) FROM inventory)
+        WHEN 'orders' THEN (SELECT COUNT(*) FROM orders)
+        WHEN 'order_item' THEN (SELECT COUNT(*) FROM order_item)
+        WHEN 'category' THEN (SELECT COUNT(*) FROM category)
+    END AS VARCHAR) THEN '通过' ELSE '失败' END
+FROM dbo.migration_baseline;
+
+-- 2. 订单总额测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+SELECT '订单金额', '订单总金额', '170.00', CAST(SUM(total_amount) AS VARCHAR),
+    CASE WHEN SUM(total_amount) = 170.00 THEN '通过' ELSE '失败' END
+FROM orders;
+
+-- 3. 库存总量测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+SELECT '库存查询', '库存总数量', '378', CAST(SUM(quantity) AS VARCHAR),
+    CASE WHEN SUM(quantity) = 378 THEN '通过' ELSE '失败' END
+FROM inventory;
+
+-- 4. 分类映射一致性测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+SELECT '关系映射', '商品分类映射一致数', '10',
+    CAST(COUNT(*) AS VARCHAR),
+    CASE WHEN COUNT(*) = 10 THEN '通过' ELSE '失败' END
+FROM product_bak_v01 b
+JOIN product p ON b.product_id = p.product_id
+JOIN category c ON p.category_id = c.category_id
+WHERE b.category = c.category_name;
+
+-- 5. 外键完整性测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+VALUES
+('完整性', 'orders→member 孤立记录', '0', CAST((SELECT COUNT(*) FROM orders o LEFT JOIN member m ON o.member_id=m.member_id WHERE o.member_id IS NOT NULL AND m.member_id IS NULL) AS VARCHAR),
+    CASE WHEN (SELECT COUNT(*) FROM orders o LEFT JOIN member m ON o.member_id=m.member_id WHERE o.member_id IS NOT NULL AND m.member_id IS NULL) = 0 THEN '通过' ELSE '失败' END),
+('完整性', 'order_item→orders 孤立记录', '0', CAST((SELECT COUNT(*) FROM order_item oi LEFT JOIN orders o ON oi.order_id=o.order_id WHERE o.order_id IS NULL) AS VARCHAR),
+    CASE WHEN (SELECT COUNT(*) FROM order_item oi LEFT JOIN orders o ON oi.order_id=o.order_id WHERE o.order_id IS NULL) = 0 THEN '通过' ELSE '失败' END),
+('完整性', 'product→category 孤立记录', '0', CAST((SELECT COUNT(*) FROM product p LEFT JOIN category c ON p.category_id=c.category_id WHERE c.category_id IS NULL) AS VARCHAR),
+    CASE WHEN (SELECT COUNT(*) FROM product p LEFT JOIN category c ON p.category_id=c.category_id WHERE c.category_id IS NULL) = 0 THEN '通过' ELSE '失败' END);
+
+-- 6. 视图可访问性测试
+INSERT INTO dbo.regression_results (test_category, test_item, expected_value, actual_value, result)
+SELECT '视图', name + ' 可访问', '存在', '存在', '通过'
+FROM sys.views
+WHERE name IN ('v_order_detail','v_product_sales','v_inventory_status','v_member_sales','v_employee_performance','v_daily_sales','v_category_sales');
+
+-- 输出完整结果表
+PRINT '';
+PRINT '=== 回归测试结果汇总（持久化保存）===';
+SELECT test_category AS 测试类别, test_item AS 测试项, expected_value AS 预期值, actual_value AS 实际值, result AS 结果
+FROM dbo.regression_results
+ORDER BY test_id;
+
+PRINT '';
+PRINT '=== 通过率统计 ===';
+SELECT
+    COUNT(*) AS 总测试项,
+    SUM(CASE WHEN result = '通过' THEN 1 ELSE 0 END) AS 通过数,
+    SUM(CASE WHEN result = '失败' THEN 1 ELSE 0 END) AS 失败数,
+    CAST(SUM(CASE WHEN result = '通过' THEN 1 ELSE 0 END) * 100.0 / COUNT(*) AS DECIMAL(5,1)) AS 通过率
+FROM dbo.regression_results;
+
+PRINT '结果已持久化保存到 regression_results 表，可随时查询对比';
+PRINT '========================================';

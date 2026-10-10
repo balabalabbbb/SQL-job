@@ -55,6 +55,57 @@ UNION ALL SELECT 'inventory', COUNT(*) FROM inventory
 UNION ALL SELECT 'orders', COUNT(*) FROM orders
 UNION ALL SELECT 'order_item', COUNT(*) FROM order_item;
 PRINT '基线记录数已保存到 migration_baseline';
+
+-- 保存迁移前关键查询结果（用于回归对比基准）
+-- 1. 订单明细基准
+IF OBJECT_ID('dbo.baseline_order_detail', 'U') IS NOT NULL
+    DROP TABLE dbo.baseline_order_detail;
+SELECT
+    o.order_id, o.order_time, o.total_amount,
+    oi.product_id, oi.quantity, oi.unit_price, oi.subtotal
+INTO dbo.baseline_order_detail
+FROM dbo.orders o
+JOIN dbo.order_item oi ON o.order_id = oi.order_id;
+PRINT '订单明细基准已保存（20条）';
+
+-- 2. 商品销售统计基准
+IF OBJECT_ID('dbo.baseline_product_sales', 'U') IS NOT NULL
+    DROP TABLE dbo.baseline_product_sales;
+SELECT
+    p.product_id, p.product_name, p.category,
+    COUNT(DISTINCT oi.order_id) AS order_count,
+    SUM(oi.quantity) AS total_quantity,
+    SUM(oi.subtotal) AS total_amount
+INTO dbo.baseline_product_sales
+FROM dbo.product p
+LEFT JOIN dbo.order_item oi ON p.product_id = oi.product_id
+GROUP BY p.product_id, p.product_name, p.category;
+PRINT '商品销售统计基准已保存（10条）';
+
+-- 3. 库存查询基准
+IF OBJECT_ID('dbo.baseline_inventory', 'U') IS NOT NULL
+    DROP TABLE dbo.baseline_inventory;
+SELECT
+    p.product_id, p.product_name, p.category,
+    i.quantity, i.min_threshold,
+    CASE WHEN i.quantity = 0 THEN '缺货'
+         WHEN i.quantity < i.min_threshold THEN '需补货'
+         ELSE '正常' END AS inventory_status
+INTO dbo.baseline_inventory
+FROM dbo.product p
+JOIN dbo.inventory i ON p.product_id = i.product_id;
+PRINT '库存查询基准已保存（10条）';
+
+-- 4. 订单总额基准
+IF OBJECT_ID('dbo.baseline_order_summary', 'U') IS NOT NULL
+    DROP TABLE dbo.baseline_order_summary;
+SELECT
+    COUNT(*) AS order_count,
+    SUM(total_amount) AS total_sales,
+    AVG(total_amount) AS avg_order_amount
+INTO dbo.baseline_order_summary
+FROM dbo.orders;
+PRINT '订单总额基准已保存';
 GO
 
 -- ============================================================
