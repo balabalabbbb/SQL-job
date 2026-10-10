@@ -18,6 +18,71 @@ USE retail_store;
 GO
 
 -- ============================================================
+-- 测试零：迁移前基准 vs 迁移后结果逐项对比
+-- ============================================================
+-- 使用 migration.sql 中保存的 baseline 表进行逐项对比
+
+PRINT '========================================';
+PRINT '测试零：迁移前基准 vs 迁移后结果逐项对比';
+PRINT '========================================';
+
+-- 0.1 订单明细基准对比（迁移前后应完全一致，因order_item未变更）
+PRINT '--- 0.1 订单明细基准对比（20条，预期完全一致）---';
+SELECT
+    b.order_id, b.product_id,
+    b.quantity AS 基准数量, oi.quantity AS 迁移后数量,
+    b.unit_price AS 基准单价, oi.unit_price AS 迁移后单价,
+    b.subtotal AS 基准小计, oi.subtotal AS 迁移后小计,
+    CASE WHEN b.quantity = oi.quantity AND b.unit_price = oi.unit_price AND b.subtotal = oi.subtotal
+         THEN '一致' ELSE '差异！' END AS 对比结果
+FROM baseline_order_detail b
+JOIN order_item oi ON b.order_id = oi.order_id AND b.product_id = oi.product_id
+ORDER BY b.order_id, b.product_id;
+DECLARE @od_diff INT; SELECT @od_diff = COUNT(*) FROM baseline_order_detail b JOIN order_item oi ON b.order_id=oi.order_id AND b.product_id=oi.product_id WHERE NOT (b.quantity=oi.quantity AND b.unit_price=oi.unit_price AND b.subtotal=oi.subtotal);
+PRINT '订单明细差异数：' + CAST(@od_diff AS VARCHAR) + '（预期0，order_item未参与迁移）';
+
+-- 0.2 商品销售统计基准对比（category通过JOIN还原，销量金额应一致）
+PRINT '--- 0.2 商品销售统计基准对比（10条，销量金额预期一致，分类通过JOIN还原）---';
+SELECT
+    b.product_id, b.product_name,
+    b.category AS 基准分类, c.category_name AS 迁移后分类,
+    b.total_quantity AS 基准销量, ISNULL(s.total_quantity,0) AS 迁移后销量,
+    b.total_amount AS 基准销售额, ISNULL(s.total_amount,0) AS 迁移后销售额,
+    CASE WHEN b.category = c.category_name AND ISNULL(s.total_quantity,0) = b.total_quantity AND ISNULL(s.total_amount,0) = b.total_amount
+         THEN '一致' ELSE '差异！' END AS 对比结果
+FROM baseline_product_sales b
+JOIN product p ON b.product_id = p.product_id
+JOIN category c ON p.category_id = c.category_id
+LEFT JOIN (SELECT product_id, SUM(quantity) AS total_quantity, SUM(subtotal) AS total_amount FROM order_item GROUP BY product_id) s ON b.product_id = s.product_id
+ORDER BY b.product_id;
+DECLARE @ps_diff INT; SELECT @ps_diff = COUNT(*) FROM baseline_product_sales b JOIN product p ON b.product_id=p.product_id JOIN category c ON p.category_id=c.category_id LEFT JOIN (SELECT product_id, SUM(quantity) AS total_quantity, SUM(subtotal) AS total_amount FROM order_item GROUP BY product_id) s ON b.product_id=s.product_id WHERE NOT (b.category=c.category_name AND ISNULL(s.total_quantity,0)=b.total_quantity AND ISNULL(s.total_amount,0)=b.total_amount);
+PRINT '商品销售统计差异数：' + CAST(@ps_diff AS VARCHAR) + '（预期0，分类名称通过JOIN还原，销量金额不变）';
+
+-- 0.3 库存查询基准对比（库存数据未变更，应完全一致）
+PRINT '--- 0.3 库存查询基准对比（10条，预期完全一致）---';
+SELECT
+    b.product_id, b.product_name,
+    b.quantity AS 基准库存, i.quantity AS 迁移后库存,
+    b.inventory_status AS 基准状态,
+    CASE WHEN i.quantity=0 THEN '缺货' WHEN i.quantity<i.min_threshold THEN '需补货' ELSE '正常' END AS 迁移后状态,
+    CASE WHEN b.quantity = i.quantity THEN '一致' ELSE '差异！' END AS 对比结果
+FROM baseline_inventory b
+JOIN inventory i ON b.product_id = i.product_id
+ORDER BY b.product_id;
+DECLARE @inv_diff INT; SELECT @inv_diff = COUNT(*) FROM baseline_inventory b JOIN inventory i ON b.product_id=i.product_id WHERE b.quantity <> i.quantity;
+PRINT '库存查询差异数：' + CAST(@inv_diff AS VARCHAR) + '（预期0，inventory未参与迁移）';
+
+-- 0.4 订单总额基准对比
+PRINT '--- 0.4 订单总额基准对比 ---';
+SELECT
+    b.order_count AS 基准订单数, (SELECT COUNT(*) FROM orders) AS 迁移后订单数,
+    b.total_sales AS 基准总额, (SELECT SUM(total_amount) FROM orders) AS 迁移后总额,
+    CASE WHEN b.order_count = (SELECT COUNT(*) FROM orders) AND b.total_sales = (SELECT SUM(total_amount) FROM orders)
+         THEN '一致' ELSE '差异！' END AS 对比结果
+FROM baseline_order_summary b;
+GO
+
+-- ============================================================
 -- 测试一：关键标识与关系映射
 -- ============================================================
 
