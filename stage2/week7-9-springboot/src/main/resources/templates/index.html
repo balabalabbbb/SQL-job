@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>首页 - 小卖部管理系统</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <h3>小卖部管理</h3>
+        <a href="/" class="active">首页</a>
+        <a href="/products/">商品管理</a>
+        <a href="/inventory/">库存管理</a>
+        <a href="/orders/">订单管理</a>
+        <a href="/orders/create">创建订单</a>
+        <div class="user-info">
+            <p>用户：<span id="userName"></span></p>
+            <p>角色：<span id="userRole"></span></p>
+            <button onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    <div class="main">
+        <h2>欢迎使用小卖部管理系统</h2>
+        <div class="card-grid">
+            <div class="card" onclick="location.href='/products/'">
+                <h3>商品管理</h3>
+                <p>查询、新增、修改、删除商品</p>
+            </div>
+            <div class="card" onclick="location.href='/inventory/'">
+                <h3>库存管理</h3>
+                <p>查询库存、调整数量、低库存预警</p>
+            </div>
+            <div class="card" onclick="location.href='/orders/'">
+                <h3>订单管理</h3>
+                <p>查询订单、查看订单明细</p>
+            </div>
+            <div class="card" onclick="location.href='/orders/create'">
+                <h3>创建订单</h3>
+                <p>下单、自动扣减库存</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        fetch('/products/api/list').then(r=>r.json()).then(res=>{
+            if(res.error_code==='AUTH_ERROR') location.href='/login';
+        });
+        function logout(){fetch('/logout',{method:'POST'}).then(()=>location.href='/login');}
+    </script>
+</body>
+</html>

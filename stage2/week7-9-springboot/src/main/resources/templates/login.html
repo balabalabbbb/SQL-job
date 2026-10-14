@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 小卖部管理系统</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <h2>小卖部管理系统</h2>
+        <div class="login-tabs">
+            <button class="tab active" onclick="switchTab('employee')">员工登录</button>
+            <button class="tab" onclick="switchTab('member')">会员登录</button>
+        </div>
+        <form id="loginForm" onsubmit="return doLogin()">
+            <div id="employeeFields">
+                <input type="text" id="account" placeholder="员工账号" required>
+                <input type="password" id="password" placeholder="密码" required>
+            </div>
+            <div id="memberFields" style="display:none">
+                <input type="text" id="phone" placeholder="手机号" required>
+            </div>
+            <button type="submit" class="btn-primary">登录</button>
+            <p id="errorMsg" class="error-msg"></p>
+        </form>
+        <div class="login-hint">
+            <p>测试账号：</p>
+            <p>店长：manager01 / Manager@123</p>
+            <p>店员：cashier01 / Manager@123</p>
+            <p>会员：13800138001</p>
+        </div>
+    </div>
+    <script>
+        let loginType = 'employee';
+        function switchTab(type) {
+            loginType = type;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('employeeFields').style.display = type === 'employee' ? 'block' : 'none';
+            document.getElementById('memberFields').style.display = type === 'member' ? 'block' : 'none';
+        }
+        function doLogin() {
+            const data = { login_type: loginType };
+            if (loginType === 'employee') {
+                data.account = document.getElementById('account').value;
+                data.password = document.getElementById('password').value;
+            } else {
+                data.phone = document.getElementById('phone').value;
+            }
+            fetch('/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) { window.location.href = '/'; }
+                else { document.getElementById('errorMsg').textContent = res.message; }
+            });
+            return false;
+        }
+    </script>
+</body>
+</html>

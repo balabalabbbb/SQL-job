@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>创建订单</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <h3>小卖部管理</h3>
+        <a href="/">首页</a>
+        <a href="/products/">商品管理</a>
+        <a href="/inventory/">库存管理</a>
+        <a href="/orders/">订单管理</a>
+        <a href="/orders/create" class="active">创建订单</a>
+        <div class="user-info"><button onclick="logout()">退出登录</button></div>
+    </div>
+    <div class="main">
+        <h2>创建订单</h2>
+        <div style="margin-bottom:15px">
+            <label>支付方式：</label>
+            <select id="paymentMethod">
+                <option>现金</option><option>微信</option><option>支付宝</option><option>其他</option>
+            </select>
+            <label style="margin-left:20px">会员ID：</label>
+            <input id="memberId" value="M0001" style="width:100px">
+        </div>
+        <table id="cartTable">
+            <thead><tr><th>商品ID</th><th>商品名称</th><th>单价</th><th>数量</th><th>小计</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div style="margin-top:15px">
+            <input id="addProductId" placeholder="商品ID" style="width:120px">
+            <input id="addQty" placeholder="数量" type="number" value="1" style="width:80px">
+            <button onclick="addToCart()">添加商品</button>
+        </div>
+        <div style="margin-top:20px;font-size:18px">
+            合计：<span id="total" style="color:red;font-weight:bold">0.00</span> 元
+            <button class="btn-primary" onclick="submitOrder()" style="margin-left:30px">提交订单</button>
+        </div>
+        <p id="msg"></p>
+    </div>
+    <script>
+        let cart=[];
+        let products=[];
+        fetch('/products/api/list').then(r=>r.json()).then(res=>{products=res.data||[];});
+        function addToCart(){
+            const pid=document.getElementById('addProductId').value;
+            const qty=parseInt(document.getElementById('addQty').value);
+            const p=products.find(x=>x.productId===pid);
+            if(!p){alert('商品不存在');return;}
+            const existing=cart.find(x=>x.productId===pid);
+            if(existing){existing.quantity+=qty;}
+            else{cart.push({productId:pid,productName:p.productName,unitPrice:p.salePrice,quantity:qty});}
+            renderCart();
+        }
+        function renderCart(){
+            let total=0;
+            const tbody=document.querySelector('#cartTable tbody');
+            tbody.innerHTML=cart.map((c,i)=>{
+                const sub=c.unitPrice*c.quantity;total+=sub;
+                return `<tr><td>${c.productId}</td><td>${c.productName}</td>
+                <td>${c.unitPrice}</td><td>${c.quantity}</td><td>${sub.toFixed(2)}</td>
+                <td><button onclick="removeItem(${i})">移除</button></td></tr>`;
+            }).join('');
+            document.getElementById('total').textContent=total.toFixed(2);
+        }
+        function removeItem(i){cart.splice(i,1);renderCart();}
+        function submitOrder(){
+            if(cart.length===0){alert('请添加商品');return;}
+            const data={items:cart.map(c=>({productId:c.productId,quantity:c.quantity})),
+            paymentMethod:document.getElementById('paymentMethod').value,
+            memberId:document.getElementById('memberId').value};
+            fetch('/orders/api/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+            .then(r=>r.json()).then(res=>{
+                alert(res.message+(res.data?' 订单号:'+res.data.orderId:''));
+                if(res.success){cart=[];renderCart();}
+            });
+        }
+        function logout(){fetch('/logout',{method:'POST'}).then(()=>location.href='/login');}
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>库存管理</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <h3>小卖部管理</h3>
+        <a href="/">首页</a>
+        <a href="/products/">商品管理</a>
+        <a href="/inventory/" class="active">库存管理</a>
+        <a href="/orders/">订单管理</a>
+        <a href="/orders/create">创建订单</a>
+        <div class="user-info"><button onclick="logout()">退出登录</button></div>
+    </div>
+    <div class="main">
+        <h2>库存管理</h2>
+        <table id="invTable">
+            <thead><tr><th>商品ID</th><th>商品名称</th><th>库存数量</th><th>货架位置</th><th>预警阈值</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <p id="msg"></p>
+    </div>
+    <script>
+        function loadInventory(){
+            fetch('/inventory/api/list').then(r=>r.json()).then(res=>{
+                if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
+                const tbody=document.querySelector('#invTable tbody');
+                tbody.innerHTML=res.data.map(i=>{
+                    const low=i.quantity<=i.minThreshold;
+                    return `<tr class="${low?'low-stock':''}">
+                    <td>${i.productId}</td><td>${i.productName}</td>
+                    <td>${i.quantity}</td><td>${i.shelfLocation||''}</td>
+                    <td>${i.minThreshold}</td><td>${low?'<span style="color:red">低库存</span>':'正常'}</td>
+                    <td><button onclick="adjust('${i.productId}',${i.quantity},${i.minThreshold})">调整</button></td></tr>`;
+                }).join('');
+            });
+        }
+        function adjust(pid,qty,min){
+            const nq=prompt('新库存数量',qty);
+            if(nq===null)return;
+            const nm=prompt('预警阈值',min);
+            fetch('/inventory/api/update',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({product_id:pid,quantity:parseInt(nq),min_threshold:parseInt(nm)})})
+            .then(r=>r.json()).then(res=>{alert(res.message);if(res.success)loadInventory();});
+        }
+        function logout(){fetch('/logout',{method:'POST'}).then(()=>location.href='/login');}
+        loadInventory();
+    </script>
+</body>
+</html>
