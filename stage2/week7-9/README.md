@@ -19,7 +19,7 @@
 ## 目录结构
 
 ```
-week7-9-springboot/
+week7-9/
 ├── pom.xml
 ├── src/main/java/com/retail/store/
 │   ├── RetailStoreApplication.java    # 主应用
@@ -179,4 +179,4 @@ mvn spring-boot:run
 - 密码BCrypt加密存储
 - 统一异常处理，不泄露内部信息
 - Session超时30分钟
-- CSRF防护（API模式下已配置）
+- CSRF已禁用（API模式下使用自定义Session认证）
