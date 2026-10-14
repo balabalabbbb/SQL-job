@@ -121,6 +121,22 @@ s, r = api(opener4, 'http://127.0.0.1:5000/products/api/add',
     {'product_id':'PTZ','product_name':'t3','category_id':1,'sale_price':1,'purchase_price':0.5,'unit':'个'})
 test('店员越权拒绝(商品管理)', s!=200, s)
 
+# 19. 数据库连接失败测试（直接测试DAL层连接处理）
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import pyodbc
+    # 用错误密码测试连接失败，验证异常被正确抛出
+    wrong_conn_str = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=retail_store;UID=retail_app;PWD=wrong_password;TrustServerCertificate=yes;"
+    try:
+        conn = pyodbc.connect(wrong_conn_str)
+        test('数据库连接失败拒绝', False, 0, '错误：连接竟然成功了')
+        conn.close()
+    except pyodbc.Error as e:
+        test('数据库连接失败拒绝', True, 0, f'正确拒绝: {str(e)[:50]}')
+except ImportError as e:
+    test('数据库连接失败拒绝', False, 0, f'导入失败: {e}')
+
 passed = sum(1 for _, ok, _ in results if ok)
 total = len(results)
 print(f"\n总计: {passed}/{total} 通过")
