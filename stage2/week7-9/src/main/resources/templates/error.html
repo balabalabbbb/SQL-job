@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作提示 - 小卖部管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .error-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 48px 56px;
+            text-align: center;
+            max-width: 480px;
+            width: 90%;
+        }
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #fff3cd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+        }
+        .error-icon.auth { background: #d1ecf1; }
+        .error-icon.permission { background: #f8d7da; }
+        .error-icon.system { background: #fff3cd; }
+        .error-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
+        .error-message {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .error-code {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 24px;
+            font-family: monospace;
+        }
+        .btn-back {
+            display: inline-block;
+            padding: 10px 28px;
+            background: #667eea;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-back:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon" th:classappend="${errorCode == 'AUTH_ERROR'} ? 'auth' : (${errorCode == 'PERMISSION_DENIED'} ? 'permission' : 'system')">
+            <span th:if="${errorCode == 'AUTH_ERROR'}">🔐</span>
+            <span th:if="${errorCode == 'PERMISSION_DENIED'}">⛔</span>
+            <span th:if="${errorCode != 'AUTH_ERROR' && errorCode != 'PERMISSION_DENIED'}">⚠️</span>
+        </div>
+        <h2 class="error-title" th:text="${title}">操作提示</h2>
+        <p class="error-message" th:text="${message}">请先登录</p>
+        <p class="error-code" th:text="'错误码：' + ${errorCode}">错误码：AUTH_ERROR</p>
+        <a href="/login" class="btn-back">返回登录</a>
+    </div>
+</body>
+</html>
