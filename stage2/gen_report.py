@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""生成第二阶段阶段报告（Word）"""
+"""生成第二阶段阶段报告（Word）- 美化紧凑版"""
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 import os
 
 BASE = r"C:\Users\lenovo\Doubao\chats\2026-09-11\new-chat-1\SQL-job\stage2"
@@ -13,11 +14,21 @@ OUT = os.path.join(BASE, "第二阶段阶段报告.docx")
 
 doc = Document()
 
+# ===== 全局页面设置：减小页边距 =====
+for section in doc.sections:
+    section.top_margin = Cm(2.0)
+    section.bottom_margin = Cm(2.0)
+    section.left_margin = Cm(2.5)
+    section.right_margin = Cm(2.5)
+
 # 设置默认字体
 style = doc.styles['Normal']
 style.font.name = '宋体'
-style.font.size = Pt(12)
+style.font.size = Pt(11)
 style._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+style.paragraph_format.space_before = Pt(0)
+style.paragraph_format.space_after = Pt(4)
+style.paragraph_format.line_spacing = 1.25
 
 def add_heading(text, level=1):
     h = doc.add_heading(text, level=level)
@@ -25,9 +36,11 @@ def add_heading(text, level=1):
         run.font.name = '黑体'
         run._element.rPr.rFonts.set(qn('w:eastAsia'), '黑体')
         run.font.color.rgb = RGBColor(0, 0, 0)
+    h.paragraph_format.space_before = Pt(10)
+    h.paragraph_format.space_after = Pt(6)
     return h
 
-def add_para(text, bold=False, size=12):
+def add_para(text, bold=False, size=11):
     p = doc.add_paragraph()
     run = p.add_run(text)
     run.font.name = '宋体'
@@ -35,13 +48,16 @@ def add_para(text, bold=False, size=12):
     run.font.size = Pt(size)
     run.bold = bold
     p.paragraph_format.first_line_indent = Cm(0.74)
-    p.paragraph_format.line_spacing = 1.5
+    p.paragraph_format.line_spacing = 1.25
+    p.paragraph_format.space_after = Pt(4)
     return p
 
-def add_image(path, width=6.0):
+def add_image(path, width=5.3):
     if os.path.exists(path):
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(4)
+        p.paragraph_format.space_after = Pt(2)
         run = p.add_run()
         run.add_picture(path, width=Inches(width))
         return p
@@ -53,32 +69,33 @@ def add_caption(text):
     run = p.add_run(text)
     run.font.name = '宋体'
     run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-    run.font.size = Pt(10)
+    run.font.size = Pt(9)
     run.italic = True
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(8)
     return p
 
 # ========== 封面 ==========
-for _ in range(4):
+for _ in range(3):
     doc.add_paragraph()
 
 title = doc.add_paragraph()
 title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+title.paragraph_format.space_after = Pt(12)
 run = title.add_run("数据库系统课程设计")
 run.font.name = '黑体'
 run._element.rPr.rFonts.set(qn('w:eastAsia'), '黑体')
-run.font.size = Pt(28)
+run.font.size = Pt(26)
 run.bold = True
 
 subtitle = doc.add_paragraph()
 subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+subtitle.paragraph_format.space_after = Pt(30)
 run = subtitle.add_run("第二阶段阶段报告")
 run.font.name = '黑体'
 run._element.rPr.rFonts.set(qn('w:eastAsia'), '黑体')
-run.font.size = Pt(24)
+run.font.size = Pt(22)
 run.bold = True
-
-doc.add_paragraph()
-doc.add_paragraph()
 
 info_items = [
     ("项目名称", "小卖部管理系统"),
@@ -91,10 +108,11 @@ info_items = [
 for label, value in info_items:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.paragraph_format.space_after = Pt(6)
     run = p.add_run(f"{label}：{value}")
     run.font.name = '宋体'
     run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-    run.font.size = Pt(14)
+    run.font.size = Pt(13)
 
 doc.add_page_break()
 
@@ -117,7 +135,8 @@ toc_items = [
 ]
 for item in toc_items:
     p = doc.add_paragraph(item)
-    p.paragraph_format.line_spacing = 1.5
+    p.paragraph_format.line_spacing = 1.25
+    p.paragraph_format.space_after = Pt(2)
 
 doc.add_page_break()
 
@@ -136,8 +155,6 @@ add_para("核心表结构包括：商品表（products）、商品类别表（ca
 add_heading("1.3 系统分层架构", level=2)
 add_para("Web应用采用经典的四层架构：页面层（Controller + Thymeleaf模板）、业务层（Service）、数据访问层（Repository/JdbcTemplate）、数据库层（SQL Server）。页面层负责用户交互与表单校验，业务层负责业务规则判断与事务管理，数据访问层负责参数化SQL执行与连接管理，数据库层负责数据持久化与约束 enforcement。")
 
-doc.add_page_break()
-
 # ========== 二、实验过程 ==========
 add_heading("二、实验过程", level=1)
 
@@ -149,50 +166,72 @@ add_para("使用Spring Boot 3.2 + Thymeleaf + Spring Security + JdbcTemplate构�
 
 add_heading("2.3 功能演示与截图", level=2)
 
-# 截图1：登录页
-add_para("（1）系统登录页面", bold=True)
-add_image(os.path.join(SHOTS, "01_login.png"), width=6.0)
-add_caption("图1 系统登录页面（支持员工登录与会员登录切换）")
+# 截图1-2 并排（用表格实现两列布局）
+add_para("（1）系统登录页面　　（2）商品管理页面（店长视角）", bold=True)
+table = doc.add_table(rows=1, cols=2)
+table.alignment = WD_TABLE_ALIGNMENT.CENTER
+cell1 = table.cell(0, 0)
+cell2 = table.cell(0, 1)
+p1 = cell1.paragraphs[0]
+p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run1 = p1.add_run()
+run1.add_picture(os.path.join(SHOTS, "01_login.png"), width=Inches(3.1))
+p2 = cell2.paragraphs[0]
+p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run2 = p2.add_run()
+run2.add_picture(os.path.join(SHOTS, "02_products_manager.png"), width=Inches(3.1))
+add_caption("图1 系统登录页面　　图2 商品管理页面")
 
-# 截图2：商品管理
-add_para("（2）商品管理页面（店长视角）", bold=True)
-add_image(os.path.join(SHOTS, "02_products_manager.png"), width=6.0)
-add_caption("图2 商品管理页面——支持商品查询、新增、修改、删除")
+# 截图3-4
+add_para("（3）库存管理页面　　（4）订单管理页面", bold=True)
+table = doc.add_table(rows=1, cols=2)
+table.alignment = WD_TABLE_ALIGNMENT.CENTER
+cell1 = table.cell(0, 0)
+cell2 = table.cell(0, 1)
+p1 = cell1.paragraphs[0]
+p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run1 = p1.add_run()
+run1.add_picture(os.path.join(SHOTS, "03_inventory.png"), width=Inches(3.1))
+p2 = cell2.paragraphs[0]
+p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run2 = p2.add_run()
+run2.add_picture(os.path.join(SHOTS, "04_orders.png"), width=Inches(3.1))
+add_caption("图3 库存管理页面（低库存预警）　　图4 订单管理页面")
 
-# 截图3：库存管理
-add_para("（3）库存管理页面", bold=True)
-add_image(os.path.join(SHOTS, "03_inventory.png"), width=6.0)
-add_caption("图3 库存管理页面——低库存商品自动红色预警")
+# 截图5-6
+add_para("（5）创建订单页面　　（6）店员角色首页", bold=True)
+table = doc.add_table(rows=1, cols=2)
+table.alignment = WD_TABLE_ALIGNMENT.CENTER
+cell1 = table.cell(0, 0)
+cell2 = table.cell(0, 1)
+p1 = cell1.paragraphs[0]
+p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run1 = p1.add_run()
+run1.add_picture(os.path.join(SHOTS, "05_order_create.png"), width=Inches(3.1))
+p2 = cell2.paragraphs[0]
+p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run2 = p2.add_run()
+run2.add_picture(os.path.join(SHOTS, "06_cashier_home.png"), width=Inches(3.1))
+add_caption("图5 创建订单页面　　图6 店员角色首页（权限受限）")
 
-# 截图4：订单管理
-add_para("（4）订单管理页面", bold=True)
-add_image(os.path.join(SHOTS, "04_orders.png"), width=6.0)
-add_caption("图4 订单管理页面——订单列表含状态、支付方式、会员与收银员信息")
-
-# 截图5：创建订单
-add_para("（5）创建订单页面", bold=True)
-add_image(os.path.join(SHOTS, "05_order_create.png"), width=6.0)
-add_caption("图5 创建订单页面——选择商品、自动计算小计与合计、提交后扣减库存")
-
-# 截图6：店员首页
-add_para("（6）店员角色首页", bold=True)
-add_image(os.path.join(SHOTS, "06_cashier_home.png"), width=6.0)
-add_caption("图6 店员角色首页——权限受限视图")
-
-# 截图7：越权拒绝
-add_para("（7）越权访问拦截", bold=True)
-add_image(os.path.join(SHOTS, "07_permission_denied.png"), width=6.0)
-add_caption("图7 越权访问返回统一错误JSON——无SQL语句、堆栈等内部信息泄露")
-
-# 截图8：未登录
-add_para("（8）未登录访问拦截", bold=True)
-add_image(os.path.join(SHOTS, "08_not_logged_in.png"), width=6.0)
-add_caption("图8 未登录访问受保护页面——返回\"请先登录\"认证错误")
+# 截图7-8
+add_para("（7）越权访问拦截　　（8）未登录访问拦截", bold=True)
+table = doc.add_table(rows=1, cols=2)
+table.alignment = WD_TABLE_ALIGNMENT.CENTER
+cell1 = table.cell(0, 0)
+cell2 = table.cell(0, 1)
+p1 = cell1.paragraphs[0]
+p1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run1 = p1.add_run()
+run1.add_picture(os.path.join(SHOTS, "07_permission_denied.png"), width=Inches(3.1))
+p2 = cell2.paragraphs[0]
+p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run2 = p2.add_run()
+run2.add_picture(os.path.join(SHOTS, "08_not_logged_in.png"), width=Inches(3.1))
+add_caption("图7 越权访问返回统一错误JSON　　图8 未登录访问返回\"请先登录\"")
 
 add_heading("2.4 集成测试与异常处理", level=2)
 add_para("完成15项集成测试，覆盖：正常登录、商品CRUD、库存调整、订单创建与取消、参数错误、未登录访问、无权限操作、数据库约束冲突等场景。后端通过@ControllerAdvice实现全局异常处理，将参数错误、认证失败、权限不足、资源不存在、约束冲突、系统异常分别映射为统一错误码和友好提示，前端仅显示简明提示，详细错误写入后端日志。")
-
-doc.add_page_break()
 
 # ========== 三、实验总结 ==========
 add_heading("三、实验总结", level=1)
