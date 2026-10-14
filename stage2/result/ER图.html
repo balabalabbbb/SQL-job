@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>小卖部管理系统 ER 图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    background: #f0f2f5;
+    padding: 30px;
+  }
+  h1 {
+    text-align: center;
+    color: #1a365d;
+    margin-bottom: 6px;
+    font-size: 26px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #718096;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .container {
+    position: relative;
+    width: 1120px;
+    height: 760px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  svg.lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+  .entity {
+    position: absolute;
+    width: 210px;
+    background: white;
+    border: 2px solid #2c5282;
+    border-radius: 10px;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(44,82,130,0.15);
+  }
+  .entity-header {
+    background: linear-gradient(135deg, #2c5282, #1a365d);
+    color: white;
+    padding: 10px 12px;
+    font-weight: bold;
+    font-size: 15px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .entity-body {
+    padding: 4px 0;
+    font-size: 11.5px;
+  }
+  .attr {
+    padding: 3px 14px;
+    color: #2d3748;
+    border-bottom: 1px solid #edf2f7;
+    font-family: "Consolas", monospace;
+  }
+  .attr:last-child { border-bottom: none; }
+  .attr.pk { color: #c53030; font-weight: bold; }
+  .attr.fk { color: #2b6cb0; }
+  .attr.uk { color: #2f855a; font-style: italic; }
+  .legend {
+    position: absolute;
+    bottom: 14px;
+    left: 24px;
+    font-size: 11.5px;
+    color: #4a5568;
+    z-index: 3;
+    line-height: 1.8;
+  }
+  .legend span { margin-right: 18px; }
+  .legend .pk-color { color: #c53030; font-weight: bold; }
+  .legend .fk-color { color: #2b6cb0; }
+  .legend .uk-color { color: #2f855a; font-style: italic; }
+  .rel-label {
+    position: absolute;
+    background: #fffaf0;
+    border: 1.5px solid #d69e2e;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: #744210;
+    z-index: 3;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .cardinality {
+    position: absolute;
+    background: #ebf8ff;
+    border: 1px solid #4299e1;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: #2c5282;
+    z-index: 3;
+    font-weight: bold;
+    font-family: "Consolas", monospace;
+  }
+  .mn-note {
+    position: absolute;
+    background: #f0fff4;
+    border: 1.5px dashed #38a169;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #22543d;
+    z-index: 3;
+    line-height: 1.6;
+    max-width: 220px;
+  }
+  .mn-note strong { color: #22543d; }
+</style>
+</head>
+<body>
+
+<h1>小卖部管理系统 ER 图</h1>
+<p class="subtitle">第一阶段 v0.1 数据库反推 ER 模型 | 6 实体 · 6 联系 · Crow's Foot 表示法 | 基数格式：最小..最大</p>
+
+<div class="container">
+<svg class="lines" viewBox="0 0 1120 760">
+  <!-- R1: MEMBER -> ORDERS (1:N, 两端可选) 垂直线 -->
+  <line x1="155" y1="195" x2="155" y2="475" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R2: EMPLOYEE -> ORDERS (1:N, 员工必须) 长曲线绕过中间 -->
+  <path d="M 965 195 C 965 350, 965 420, 900 475 L 260 510" fill="none" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R3: EMPLOYEE -> INVENTORY (1:N, 必须) 平滑曲线 -->
+  <path d="M 965 195 C 965 280, 800 310, 700 330" fill="none" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R4: PRODUCT -> INVENTORY (1:1, 必须) 水平线 -->
+  <line x1="340" y1="365" x2="460" y2="365" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R5: ORDERS -> ORDER_ITEM (1:N, 必须) 水平线 -->
+  <line x1="260" y1="565" x2="460" y2="565" stroke="#4299e1" stroke-width="2"/>
+
+  <!-- R6: PRODUCT -> ORDER_ITEM (1:N, 商品可选) 平滑曲线 -->
+  <path d="M 235 470 C 235 510, 300 545, 460 565" fill="none" stroke="#4299e1" stroke-width="2"/>
+</svg>
+
+<!-- 实体：MEMBER -->
+<div class="entity" style="top:50px; left:50px;">
+  <div class="entity-header">会员 MEMBER</div>
+  <div class="entity-body">
+    <div class="attr pk">member_id (PK)</div>
+    <div class="attr">member_name</div>
+    <div class="attr uk">phone (UK)</div>
+    <div class="attr">register_time</div>
+    <div class="attr">points_balance</div>
+    <div class="attr">member_level</div>
+    <div class="attr">total_spent</div>
+    <div class="attr">last_purchase_time</div>
+    <div class="attr">member_status</div>
+  </div>
+</div>
+
+<!-- 实体：EMPLOYEE -->
+<div class="entity" style="top:50px; left:860px;">
+  <div class="entity-header">员工 EMPLOYEE</div>
+  <div class="entity-body">
+    <div class="attr pk">employee_id (PK)</div>
+    <div class="attr">employee_name</div>
+    <div class="attr">position</div>
+    <div class="attr uk">login_account (UK)</div>
+    <div class="attr">login_password</div>
+    <div class="attr">phone</div>
+    <div class="attr">hire_date</div>
+    <div class="attr">employee_status</div>
+    <div class="attr">last_login_time</div>
+  </div>
+</div>
+
+<!-- 实体：PRODUCT -->
+<div class="entity" style="top:270px; left:130px;">
+  <div class="entity-header">商品 PRODUCT</div>
+  <div class="entity-body">
+    <div class="attr pk">product_id (PK)</div>
+    <div class="attr">product_name</div>
+    <div class="attr">category</div>
+    <div class="attr">sale_price</div>
+    <div class="attr">purchase_price</div>
+    <div class="attr">unit</div>
+    <div class="attr">supplier</div>
+    <div class="attr">production_date</div>
+    <div class="attr">shelf_life_days</div>
+    <div class="attr">status</div>
+  </div>
+</div>
+
+<!-- 实体：INVENTORY -->
+<div class="entity" style="top:280px; left:460px;">
+  <div class="entity-header">库存 INVENTORY</div>
+  <div class="entity-body">
+    <div class="attr pk">inventory_id (PK)</div>
+    <div class="attr fk uk">product_id (FK,UK)</div>
+    <div class="attr">quantity</div>
+    <div class="attr">shelf_location</div>
+    <div class="attr">min_threshold</div>
+    <div class="attr">last_updated</div>
+    <div class="attr fk">last_updated_by (FK)</div>
+  </div>
+</div>
+
+<!-- 实体：ORDERS -->
+<div class="entity" style="top:475px; left:50px;">
+  <div class="entity-header">订单 ORDERS</div>
+  <div class="entity-body">
+    <div class="attr pk">order_id (PK)</div>
+    <div class="attr">order_time</div>
+    <div class="attr">total_amount</div>
+    <div class="attr">payment_method</div>
+    <div class="attr">order_status</div>
+    <div class="attr fk">member_id (FK,可空)</div>
+    <div class="attr fk">cashier_id (FK)</div>
+    <div class="attr">remark</div>
+  </div>
+</div>
+
+<!-- 实体：ORDER_ITEM -->
+<div class="entity" style="top:490px; left:460px;">
+  <div class="entity-header">订单明细 ORDER_ITEM</div>
+  <div class="entity-body">
+    <div class="attr pk">item_id (PK)</div>
+    <div class="attr fk">order_id (FK)</div>
+    <div class="attr fk">product_id (FK)</div>
+    <div class="attr">quantity</div>
+    <div class="attr">unit_price</div>
+    <div class="attr">subtotal</div>
+  </div>
+</div>
+
+<!-- 联系标签 -->
+<div class="rel-label" style="top:320px; left:80px;">下单</div>
+<div class="rel-label" style="top:350px; left:870px;">收银</div>
+<div class="rel-label" style="top:300px; left:740px;">更新库存</div>
+<div class="rel-label" style="top:350px; left:385px;">拥有</div>
+<div class="rel-label" style="top:548px; left:340px;">包含</div>
+<div class="rel-label" style="top:495px; left:250px;">出现在</div>
+
+<!-- 基数标注 - R1 下单 -->
+<div class="cardinality" style="top:455px; left:138px;">0..1</div>
+<div class="cardinality" style="top:490px; left:138px;">0..N</div>
+
+<!-- 基数标注 - R2 收银 -->
+<div class="cardinality" style="top:488px; left:870px;">1..1</div>
+<div class="cardinality" style="top:520px; left:870px;">0..N</div>
+
+<!-- 基数标注 - R3 更新库存 -->
+<div class="cardinality" style="top:315px; left:680px;">1..1</div>
+<div class="cardinality" style="top:340px; left:680px;">0..N</div>
+
+<!-- 基数标注 - R4 拥有库存 -->
+<div class="cardinality" style="top:350px; left:310px;">1..1</div>
+<div class="cardinality" style="top:350px; left:420px;">1..1</div>
+
+<!-- 基数标注 - R5 包含明细 -->
+<div class="cardinality" style="top:550px; left:235px;">1..1</div>
+<div class="cardinality" style="top:550px; left:430px;">1..N</div>
+
+<!-- 基数标注 - R6 商品出现在明细 -->
+<div class="cardinality" style="top:515px; left:280px;">1..1</div>
+<div class="cardinality" style="top:575px; left:280px;">0..N</div>
+
+<!-- M:N 联系说明 -->
+<div class="mn-note" style="top:640px; left:460px;">
+  <strong>M:N 联系：</strong>订单(ORDERS) 与 商品(PRODUCT) 本质为 M:N，<br>
+  通过关联实体 <strong>订单明细(ORDER_ITEM)</strong> 分解为两个 1:N 联系，<br>
+  明细含联系自身属性：数量、成交单价、小计。
+</div>
+
+<!-- 图例 -->
+<div class="legend">
+  <div><span class="pk-color">■ PK</span> 主码 <span class="fk-color">■ FK</span> 外码 <span class="uk-color">■ UK</span> 候选码(唯一)</div>
+  <div>基数格式：<strong>最小..最大</strong> ｜ 0=可选参与 ｜ 1=必须参与</div>
+</div>
+
+</div>
+
+</body>
+</html>
