@@ -13,7 +13,11 @@
         <a href="/inventory/">库存管理</a>
         <a href="/orders/">订单管理</a>
         <a href="/orders/create" class="active">创建订单</a>
-        <div class="user-info"><button onclick="logout()">退出登录</button></div>
+        <div class="user-info">
+            <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
+            <p>角色：<span th:text="${session.userRole} ?: '-'"></span></p>
+            <button onclick="logout()">退出登录</button>
+        </div>
     </div>
     <div class="main">
         <h2>创建订单</h2>

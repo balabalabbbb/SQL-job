@@ -14,8 +14,8 @@
         <a href="/orders/">订单管理</a>
         <a href="/orders/create">创建订单</a>
         <div class="user-info">
-            <p>用户：<span id="userName"></span></p>
-            <p>角色：<span id="userRole"></span></p>
+            <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
+            <p>角色：<span th:text="${session.userRole} ?: '-'"></span></p>
             <button onclick="logout()">退出登录</button>
         </div>
     </div>
