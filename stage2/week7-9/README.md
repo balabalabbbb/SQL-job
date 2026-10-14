@@ -88,17 +88,24 @@ pip install -r requirements.txt
 
 ### 4. 配置数据库连接
 
-编辑 `config.py`，修改数据库连接信息：
+编辑 `config.py`，修改数据库连接信息。应用使用**受限数据库账户** `retail_app`（仅 SELECT/INSERT/UPDATE/DELETE 权限，无 DDL 权限）：
 
 ```python
 DB_CONFIG = {
     'server': 'localhost',
     'database': 'retail_store',
-    'username': 'sa',
-    'password': '你的密码',
+    'username': 'retail_app',
+    'password': 'retail123456',
     'driver': '{ODBC Driver 17 for SQL Server}',
 }
 ```
+
+> 受限账户创建脚本（需用sa执行）：
+> ```sql
+> CREATE LOGIN retail_app WITH PASSWORD = 'retail123456';
+> CREATE USER retail_app FOR LOGIN retail_app;
+> GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::dbo TO retail_app;
+> ```
 
 ### 5. 启动应用
 
@@ -168,9 +175,17 @@ python app.py
 前端只显示友好提示，不暴露SQL、堆栈、连接信息；详细错误写入后端日志。
 
 ### 7. 日志记录
-- 请求日志：请求标识、时间、用户、角色、路径、方法
-- 错误日志：错误码、HTTP状态、详细信息
+- 请求日志：请求标识、时间、**操作名称**、用户、角色、路径、方法
+- 响应日志：**处理结果**（成功/失败）、HTTP状态码
+- 错误日志：操作名称、错误码、HTTP状态、详细信息
 - 日志文件：`logs/app.log`
+
+日志示例：
+```
+[202610141143316565] 操作=创建订单 用户=张三 角色=manager 路径=POST /orders/api/create
+[202610141143316565] 操作=创建订单 处理结果=成功 HTTP=200
+[202610141143319804] 操作=新增商品 错误码=PERMISSION_ERROR HTTP=403 详情=无权限执行此操作 处理结果=失败
+```
 
 ## 集成测试
 

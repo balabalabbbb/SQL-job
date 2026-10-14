@@ -5,8 +5,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_CONFIG = {
     'server': 'localhost',
     'database': 'retail_store',
-    'username': 'sa',
-    'password': 'Root@123456',
+    'username': 'retail_app',
+    'password': 'retail123456',
     'driver': '{ODBC Driver 17 for SQL Server}',
     'trust_cert': True
 }
