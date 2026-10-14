@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}创建订单{% endblock %}
+{% block content %}
+<h2>创建订单</h2>
+<div class="form-container">
+    <div id="items">
+        <div class="item-row">
+            <input type="text" placeholder="商品ID (如P0001)" class="item-pid">
+            <input type="number" placeholder="数量" value="1" min="1" class="item-qty">
+        </div>
+    </div>
+    <button onclick="addItem()" class="btn-secondary">+ 添加商品</button>
+    <div style="margin-top:15px">
+        <label>支付方式：</label>
+        <select id="payment">
+            <option value="现金">现金</option>
+            <option value="微信">微信</option>
+            <option value="支付宝">支付宝</option>
+            <option value="其他">其他</option>
+        </select>
+    </div>
+    <div style="margin-top:10px">
+        <input type="text" id="remark" placeholder="备注（可选）">
+    </div>
+    <button onclick="submitOrder()" class="btn-primary" style="margin-top:15px">提交订单</button>
+    <p id="orderMsg"></p>
+</div>
+<script>
+function addItem(){
+    const div=document.createElement('div');
+    div.className='item-row';
+    div.innerHTML='<input type="text" placeholder="商品ID" class="item-pid"><input type="number" placeholder="数量" value="1" min="1" class="item-qty"><button onclick="this.parentElement.remove()">删除</button>';
+    document.getElementById('items').appendChild(div);
+}
+function submitOrder(){
+    const items=[];
+    document.querySelectorAll('.item-row').forEach(r=>{
+        const pid=r.querySelector('.item-pid').value;
+        const qty=parseInt(r.querySelector('.item-qty').value);
+        if(pid&&qty>0) items.push({product_id:pid,quantity:qty});
+    });
+    if(items.length===0){document.getElementById('orderMsg').textContent='请添加商品';return;}
+    fetch('/orders/api/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:items,payment_method:document.getElementById('payment').value,remark:document.getElementById('remark').value})})
+    .then(r=>r.json()).then(res=>{
+        document.getElementById('orderMsg').textContent=res.success?`订单创建成功：${res.data.order_id}，金额¥${res.data.total_amount}`:res.message;
+    });
+}
+</script>
+{% endblock %}

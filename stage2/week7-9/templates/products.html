@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}商品管理{% endblock %}
+{% block content %}
+<h2>商品管理</h2>
+<table class="data-table">
+    <thead><tr><th>商品ID</th><th>名称</th><th>类别</th><th>售价</th><th>进价</th><th>单位</th><th>状态</th></tr></thead>
+    <tbody id="productTable"><tr><td colspan="7">加载中...</td></tr></tbody>
+</table>
+<script>
+fetch('/products/api/list').then(r=>r.json()).then(res=>{
+    const tb=document.getElementById('productTable');
+    tb.innerHTML=res.data.map(p=>`<tr><td>${p.product_id}</td><td>${p.product_name}</td><td>${p.category_name||''}</td><td>¥${p.sale_price}</td><td>¥${p.purchase_price}</td><td>${p.unit}</td><td>${p.status}</td></tr>`).join('');
+});
+</script>
+{% endblock %}
