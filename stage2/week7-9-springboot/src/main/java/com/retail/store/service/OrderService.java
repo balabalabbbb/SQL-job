@@ -67,7 +67,7 @@ public class OrderService {
                 totalAmount = totalAmount.add(subtotal);
 
                 OrderItem item = new OrderItem();
-                item.setProduct(product);
+                item.setProductId(product.getProductId());
                 item.setQuantity(itemReq.getQuantity());
                 item.setUnitPrice(product.getSalePrice());
                 item.setSubtotal(subtotal);
@@ -89,19 +89,18 @@ public class OrderService {
             if (request.getMemberId() != null) {
                 Member member = memberRepository.findById(request.getMemberId())
                         .orElseThrow(() -> new NotFoundException("会员不存在"));
-                order.setMember(member);
+                order.setMemberId(request.getMemberId());
             }
 
             if (cashierId != null) {
-                order.setCashier(new Employee());
-                order.getCashier().setEmployeeId(cashierId);
+                order.setCashierId(cashierId);
             }
 
             orderRepository.save(order);
 
             // 5. 写入订单明细
             for (OrderItem item : items) {
-                item.setOrder(order);
+                item.setOrderId(orderId);
                 orderItemRepository.save(item);
             }
 

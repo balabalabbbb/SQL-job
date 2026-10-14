@@ -2,6 +2,7 @@ package com.retail.store.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,9 +13,13 @@ public class Inventory {
     @Column(name = "inventory_id")
     private Integer inventoryId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product product;
+
+    @Column(name = "product_id", length = 20)
+    private String productId;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -29,14 +34,7 @@ public class Inventory {
     private LocalDateTime lastUpdated;
 
     @Transient
-    private String productId;
-
-    @Transient
     private String productName;
-
-    public String getProductId() {
-        return product != null ? product.getProductId() : productId;
-    }
 
     public String getProductName() {
         return product != null ? product.getProductName() : productName;

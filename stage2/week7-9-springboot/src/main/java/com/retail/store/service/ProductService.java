@@ -54,7 +54,7 @@ public class ProductService {
         existing.setSalePrice(product.getSalePrice());
         existing.setPurchasePrice(product.getPurchasePrice());
         existing.setUnit(product.getUnit());
-        existing.setCategory(product.getCategory());
+        existing.setCategoryId(product.getCategoryId());
         log.info("修改商品: {}", productId);
         return productRepository.save(existing);
     }

@@ -2,6 +2,7 @@ package com.retail.store.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 
 @Data
@@ -13,13 +14,21 @@ public class OrderItem {
     @Column(name = "item_id")
     private Integer itemId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", insertable = false, updatable = false)
     private Order order;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product product;
+
+    @Column(name = "order_id", length = 20)
+    private String orderId;
+
+    @Column(name = "product_id", length = 20)
+    private String productId;
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -31,14 +40,7 @@ public class OrderItem {
     private BigDecimal subtotal;
 
     @Transient
-    private String productId;
-
-    @Transient
     private String productName;
-
-    public String getProductId() {
-        return product != null ? product.getProductId() : productId;
-    }
 
     public String getProductName() {
         return product != null ? product.getProductName() : productName;

@@ -2,6 +2,7 @@ package com.retail.store.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 
 @Data
@@ -30,9 +31,13 @@ public class Product {
     @Column(name = "status", length = 20)
     private String status;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
     private Category category;
+
+    @Column(name = "category_id", length = 20)
+    private String categoryId;
 
     @Transient
     private String categoryName;
