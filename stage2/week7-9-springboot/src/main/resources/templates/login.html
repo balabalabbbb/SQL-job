@@ -15,11 +15,11 @@
         </div>
         <form id="loginForm" onsubmit="return doLogin()">
             <div id="employeeFields">
-                <input type="text" id="account" placeholder="员工账号" required>
-                <input type="password" id="password" placeholder="密码" required>
+                <input type="text" id="account" name="account" placeholder="员工账号" required>
+                <input type="password" id="password" name="password" placeholder="密码" required>
             </div>
             <div id="memberFields" style="display:none">
-                <input type="text" id="phone" placeholder="手机号" required>
+                <input type="text" id="phone" name="phone" placeholder="手机号">
             </div>
             <button type="submit" class="btn-primary">登录</button>
             <p id="errorMsg" class="error-msg"></p>
@@ -37,8 +37,14 @@
             loginType = type;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
-            document.getElementById('employeeFields').style.display = type === 'employee' ? 'block' : 'none';
-            document.getElementById('memberFields').style.display = type === 'member' ? 'block' : 'none';
+            const empFields = document.getElementById('employeeFields');
+            const memFields = document.getElementById('memberFields');
+            empFields.style.display = type === 'employee' ? 'block' : 'none';
+            memFields.style.display = type === 'member' ? 'block' : 'none';
+            // 动态设置required，避免隐藏字段验证失败
+            document.getElementById('account').required = (type === 'employee');
+            document.getElementById('password').required = (type === 'employee');
+            document.getElementById('phone').required = (type === 'member');
         }
         function doLogin() {
             const data = { login_type: loginType };
