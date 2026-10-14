@@ -2,17 +2,54 @@
 {% block title %}库存管理{% endblock %}
 {% block content %}
 <h2>库存管理</h2>
+
+{% if user.get('user_role') in ['manager', 'cashier'] %}
+<div class="form-box">
+    <h3>库存调整</h3>
+    <form id="adjForm" onsubmit="return adjustInv()">
+        <select id="adj_pid">
+            <option value="">选择商品</option>
+        </select>
+        <input type="number" id="adj_qty" placeholder="新库存数量" min="0" required>
+        <input type="number" id="adj_threshold" placeholder="预警阈值" min="0" value="10">
+        <button type="submit" class="btn-primary">调整</button>
+    </form>
+    <p id="adjMsg" class="error-msg"></p>
+</div>
+{% endif %}
+
 <table class="data-table">
     <thead><tr><th>商品ID</th><th>商品名称</th><th>当前库存</th><th>预警阈值</th><th>状态</th></tr></thead>
     <tbody id="invTable"><tr><td colspan="5">加载中...</td></tr></tbody>
 </table>
+
 <script>
-fetch('/inventory/api/list').then(r=>r.json()).then(res=>{
-    const tb=document.getElementById('invTable');
-    tb.innerHTML=res.data.map(i=>{
-        const low=i.quantity<=i.min_threshold;
-        return `<tr class="${low?'low-stock':''}"><td>${i.product_id}</td><td>${i.product_name||''}</td><td>${i.quantity}</td><td>${i.min_threshold}</td><td>${low?'⚠️ 低库存':'正常'}</td></tr>`;
-    }).join('');
-});
+let invList = [];
+function loadInv(){
+    fetch('/inventory/api/list').then(r=>r.json()).then(res=>{
+        invList = res.data;
+        const sel=document.getElementById('adj_pid');
+        if(sel){
+            sel.innerHTML='<option value="">选择商品</option>'+res.data.map(i=>`<option value="${i.product_id}">${i.product_id} ${i.product_name}</option>`).join('');
+        }
+        const tb=document.getElementById('invTable');
+        tb.innerHTML=res.data.map(i=>{
+            const low=i.quantity<=i.min_threshold;
+            return `<tr class="${low?'low-stock':''}"><td>${i.product_id}</td><td>${i.product_name||''}</td><td>${i.quantity}</td><td>${i.min_threshold}</td><td>${low?'⚠️ 低库存':'正常'}</td></tr>`;
+        }).join('');
+    });
+}
+function adjustInv(){
+    const pid=document.getElementById('adj_pid').value;
+    if(!pid){alert('请选择商品');return false;}
+    const data={product_id:pid,quantity:parseInt(document.getElementById('adj_qty').value),min_threshold:parseInt(document.getElementById('adj_threshold').value)};
+    fetch('/inventory/api/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(r=>r.json()).then(res=>{
+        document.getElementById('adjMsg').textContent=res.success?'调整成功！':res.message;
+        if(res.success){document.getElementById('adjForm').reset();loadInv();}
+    });
+    return false;
+}
+loadInv();
 </script>
 {% endblock %}
