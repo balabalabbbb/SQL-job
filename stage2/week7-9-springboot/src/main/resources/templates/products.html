@@ -8,11 +8,13 @@
 <body>
     <div class="sidebar">
         <h3>小卖部管理</h3>
-        <a href="/">首页</a>
-        <a href="/products/" class="active">商品管理</a>
-        <a href="/inventory/">库存管理</a>
-        <a href="/orders/">订单管理</a>
-        <a href="/orders/create">创建订单</a>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/products/" class="active">商品管理</a>
+            <a href="/inventory/">库存管理</a>
+            <a href="/orders/">订单管理</a>
+            <a href="/orders/create">创建订单</a>
+        </div>
         <div class="user-info">
             <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
             <p>角色：<span th:text="${session.userRole} ?: '-'"></span></p>
