@@ -59,4 +59,11 @@ public class OrderController {
         }
         return ApiResponse.ok("订单创建成功", orderService.createOrder(request, cashierId));
     }
+
+    @PostMapping("/api/cancel/{orderId}")
+    @ResponseBody
+    public ApiResponse<Map<String, Object>> cancelOrder(@PathVariable String orderId, HttpSession session) {
+        authService.canCreateOrder(session);
+        return ApiResponse.ok("订单取消成功", orderService.cancelOrder(orderId));
+    }
 }

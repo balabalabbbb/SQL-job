@@ -143,4 +143,45 @@ public class OrderService {
         int seq = (maxSeq != null ? maxSeq : 0) + 1;
         return "ORD" + dateStr + String.format("%04d", seq);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> cancelOrder(String orderId) {
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new NotFoundException("订单不存在"));
+
+            if ("已取消".equals(order.getOrderStatus()) || "已退款".equals(order.getOrderStatus())) {
+                throw new BusinessRuleException("订单已取消/退款，不可重复取消");
+            }
+
+            // 1. 修改订单状态
+            order.setOrderStatus("已取消");
+            orderRepository.save(order);
+
+            // 2. 恢复库存
+            List<OrderItem> items = orderItemRepository.findByOrderOrderId(orderId);
+            for (OrderItem item : items) {
+                inventoryRepository.deductStock(item.getProductId(), -item.getQuantity());
+            }
+
+            // 3. 扣减会员积分
+            if (order.getMemberId() != null) {
+                int points = order.getTotalAmount().intValue();
+                memberRepository.addPoints(order.getMemberId(), -points);
+            }
+
+            log.info("取消订单成功: {} 恢复库存{}项", orderId, items.size());
+            Map<String, Object> result = new HashMap<>();
+            result.put("orderId", orderId);
+            result.put("status", "已取消");
+            result.put("restoredItems", items.size());
+            return result;
+        } catch (NotFoundException | BusinessRuleException e) {
+            log.warn("取消订单业务异常: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("取消订单事务失败: {}", e.getMessage(), e);
+            throw new TransactionException("取消订单事务失败: " + e.getMessage());
+        }
+    }
 }
