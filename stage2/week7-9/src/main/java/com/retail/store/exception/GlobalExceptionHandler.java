@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
             mav.addObject("errorCode", e.getErrorCode());
             mav.addObject("message", e.getMessage());
             mav.addObject("title", getTitleByErrorCode(e.getErrorCode()));
-            mav.setStatus(e.getHttpStatus());
+            mav.setStatus(HttpStatus.valueOf(e.getHttpStatus()));
             return mav;
         }
 

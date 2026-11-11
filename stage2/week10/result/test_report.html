@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>第10周 存储过程与函数测试报告</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Microsoft YaHei",sans-serif; background:#f4f6fa; color:#2c3e50; padding:32px; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 6px; }
+  .meta { color:#7f8c8d; font-size:14px; margin-bottom:24px; }
+  .cards { display:flex; gap:18px; margin-bottom:28px; }
+  .card { flex:1; background:linear-gradient(135deg,#3b6ea5,#2c5282); color:#fff;
+    border-radius:14px; padding:22px 24px; box-shadow:0 6px 18px rgba(44,82,130,.25); }
+  .card-num { font-size:34px; font-weight:700; }
+  .card-label { font-size:15px; margin-top:4px; opacity:.95; }
+  .card-sub { font-size:13px; margin-top:6px; opacity:.8; }
+  section { background:#fff; border-radius:14px; padding:22px 26px; margin-bottom:24px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05); }
+  h2 { font-size:19px; margin:0 0 16px; display:flex; align-items:center; gap:12px; }
+  .badge { font-size:13px; padding:3px 12px; border-radius:20px; }
+  .badge.ok { background:#e6f7ec; color:#1e8449; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { background:#2c5282; color:#fff; padding:10px 12px; text-align:left; font-weight:600; }
+  td { padding:9px 12px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+  tbody tr:nth-child(even) { background:#f8fafc; }
+  .pass-cell { color:#1e8449; font-weight:700; }
+  .fail-cell { color:#c0392b; font-weight:700; }
+</style></head>
+<body><div class="wrap">
+  <h1>小卖部管理系统 · 第10周 存储过程与函数测试报告</h1>
+  <div class="meta">数据库：SQL Server / retail_store ｜ 测试脚本：test_function.sql、test_procedure.sql ｜ 汇总：33 通过 / 0 失败</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-num">18/18</div>
+      <div class="card-label">函数测试（function.sql）</div>
+      <div class="card-sub">通过 18 · 失败 0</div>
+    </div>
+    <div class="card">
+      <div class="card-num">15/15</div>
+      <div class="card-label">存储过程测试（procedure.sql）</div>
+      <div class="card-sub">通过 15 · 失败 0</div>
+    </div></div>
+  
+    <section>
+      <h2>函数测试（function.sql）<span class="badge ok">18/18 通过</span></h2>
+      <table>
+        <thead><tr><th>编号</th><th>测试项</th><th>输入参数</th>
+        <th>预期</th><th>实际</th><th>结论</th></tr></thead>
+        <tbody><tr><td>F01</td><td>补货量-低于目标返回正数</td><td>P0005, 默认目标</td><td>&gt;0</td><td>3</td><td class="pass-cell">PASS</td></tr><tr><td>F02</td><td>补货量-已达标返回0</td><td>P0001</td><td>0</td><td>0</td><td class="pass-cell">PASS</td></tr><tr><td>F03</td><td>补货量-错误商品编号返回NULL</td><td>P9999</td><td>NULL</td><td>NULL</td><td class="pass-cell">PASS</td></tr><tr><td>F04</td><td>补货量-指定目标库存</td><td>P0005, target=100</td><td>100-当前库存</td><td>83</td><td class="pass-cell">PASS</td></tr><tr><td>F05</td><td>补货量-空值编号返回NULL</td><td>NULL</td><td>NULL</td><td>NULL</td><td class="pass-cell">PASS</td></tr><tr><td>F06</td><td>补货量-返回值恒非负</td><td>全部商品</td><td>MIN&gt;=0</td><td>0</td><td class="pass-cell">PASS</td></tr><tr><td>F07</td><td>销售汇总-正常日期范围返回全部商品</td><td>2026-09-01~09-30</td><td>=商品数10</td><td>10</td><td class="pass-cell">PASS</td></tr><tr><td>F08</td><td>销售汇总-错误日期返回空(校验在过程层)</td><td>2026-09-30~09-01</td><td>0条有销售</td><td>0</td><td class="pass-cell">PASS</td></tr><tr><td>F09</td><td>销售汇总-无销售记录返回0</td><td>2030-01-01~01-31</td><td>订单数合计0</td><td>0</td><td class="pass-cell">PASS</td></tr><tr><td>F10</td><td>销售汇总-可在SELECT/JOIN中调用</td><td>JOIN product</td><td>=商品数10</td><td>10</td><td class="pass-cell">PASS</td></tr><tr><td>F11</td><td>折扣率-金卡会员</td><td>M0003, 50元</td><td>0.900</td><td>0.900</td><td class="pass-cell">PASS</td></tr><tr><td>F12</td><td>折扣率-散客满200门槛</td><td>NULL, 250元</td><td>0.900</td><td>0.900</td><td class="pass-cell">PASS</td></tr><tr><td>F13</td><td>折扣率-错误会员编号返回NULL</td><td>M9999</td><td>NULL</td><td>NULL</td><td class="pass-cell">PASS</td></tr><tr><td>F14</td><td>折扣率-结果均在[0,1]</td><td>全部会员各金额</td><td>MIN&gt;=0且MAX&lt;=1</td><td>见左</td><td class="pass-cell">PASS</td></tr><tr><td>F15</td><td>折扣金额-正常计算</td><td>150, 0.900</td><td>15.00</td><td>15.00</td><td class="pass-cell">PASS</td></tr><tr><td>F16</td><td>折扣金额-非法折扣率返回NULL</td><td>100, 1.5</td><td>NULL</td><td>NULL</td><td class="pass-cell">PASS</td></tr><tr><td>F17</td><td>折扣金额-非法负金额返回NULL</td><td>-5, 0.9</td><td>NULL</td><td>NULL</td><td class="pass-cell">PASS</td></tr><tr><td>F18</td><td>折扣金额-无折扣为0</td><td>100, 1.000</td><td>0.00</td><td>0.00</td><td class="pass-cell">PASS</td></tr></tbody>
+      </table>
+    </section>
+    <section>
+      <h2>存储过程测试（procedure.sql）<span class="badge ok">15/15 通过</span></h2>
+      <table>
+        <thead><tr><th>编号</th><th>测试项</th><th>输入参数</th>
+        <th>预期</th><th>实际</th><th>结论</th></tr></thead>
+        <tbody><tr><td>P01</td><td>销售统计-正常范围</td><td>2026-09-01~09-30</td><td>成功,订单数&gt;0</td><td>订单数=9 数量=37 金额=141.00</td><td class="pass-cell">PASS</td></tr><tr><td>P02</td><td>销售统计-开始日期为空</td><td>NULL</td><td>错误50001</td><td>错误号=50001</td><td class="pass-cell">PASS</td></tr><tr><td>P03</td><td>销售统计-结束日期为空</td><td>NULL</td><td>错误50002</td><td>错误号=50002</td><td class="pass-cell">PASS</td></tr><tr><td>P04</td><td>销售统计-开始晚于结束</td><td>2026-09-30~09-01</td><td>错误50003</td><td>错误号=50003</td><td class="pass-cell">PASS</td></tr><tr><td>P05</td><td>销售统计-无销售记录返回0</td><td>2030-01-01~01-31</td><td>订单数0,金额0</td><td>订单数=0 金额=0.00</td><td class="pass-cell">PASS</td></tr><tr><td>P06</td><td>销售统计-重复调用结果一致</td><td>同一范围调用2次</td><td>两次金额相同</td><td>141.00 / 141.00</td><td class="pass-cell">PASS</td></tr><tr><td>P07</td><td>库存调整-正常增加</td><td>P0005 +10</td><td>库存=18</td><td>实际库存=18</td><td class="pass-cell">PASS</td></tr><tr><td>P08</td><td>库存调整-正常减少</td><td>P0005 -3</td><td>库存=15</td><td>实际库存=15</td><td class="pass-cell">PASS</td></tr><tr><td>P09</td><td>库存调整-商品不存在</td><td>P9999</td><td>错误50014</td><td>错误号=50014</td><td class="pass-cell">PASS</td></tr><tr><td>P10</td><td>库存调整-操作员不存在</td><td>operator=999</td><td>错误50015</td><td>错误号=50015</td><td class="pass-cell">PASS</td></tr><tr><td>P11</td><td>库存调整-数量为零</td><td>qty=0</td><td>错误50012</td><td>错误号=50012</td><td class="pass-cell">PASS</td></tr><tr><td>P12</td><td>库存调整-原因为空</td><td>reason=NULL</td><td>错误50013</td><td>错误号=50013</td><td class="pass-cell">PASS</td></tr><tr><td>P13</td><td>库存调整-库存不足拒绝且不写入</td><td>P0005 -100</td><td>错误50017且库存/记录不变</td><td>错误号=50017 库存15-&gt;15 记录2-&gt;2</td><td class="pass-cell">PASS</td></tr><tr><td>P14</td><td>库存调整-重复调用逐次生效</td><td>P0005 两次+1</td><td>库存=17,记录+2</td><td>库存=17 调整记录数=4</td><td class="pass-cell">PASS</td></tr><tr><td>P15</td><td>调整记录-前后数量勾稽一致</td><td>全部调整记录</td><td>全部满足勾稽</td><td>违规条数=0</td><td class="pass-cell">PASS</td></tr></tbody>
+      </table>
+    </section>
+</div></body></html>

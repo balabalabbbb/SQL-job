@@ -14,6 +14,7 @@
             <a href="/inventory/">库存管理</a>
             <a href="/orders/">订单管理</a>
             <a href="/orders/create">创建订单</a>
+            <a th:if="${session.userType == 'employee'}" href="/sales/">销售统计</a>
         </div>
         <div class="user-info">
             <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>

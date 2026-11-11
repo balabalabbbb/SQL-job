@@ -22,6 +22,12 @@ public class Order {
     @Column(name = "total_amount", precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name = "discount_rate", precision = 4, scale = 3)
+    private BigDecimal discountRate;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    private BigDecimal discountAmount;
+
     @Column(name = "payment_method", length = 20)
     private String paymentMethod;
 

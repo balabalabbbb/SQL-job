@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>销售统计</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <div class="sidebar">
+        <h3>小卖部管理</h3>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/products/">商品管理</a>
+            <a href="/inventory/">库存管理</a>
+            <a href="/orders/">订单管理</a>
+            <a href="/orders/create">创建订单</a>
+            <a href="/sales/" class="active">销售统计</a>
+        </div>
+        <div class="user-info">
+            <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
+            <p>角色：<span th:text="${session.userRole} ?: '-'"></span></p>
+            <button onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    <div class="main">
+        <h2>销售统计与汇总</h2>
+
+        <div class="form-section">
+            <div class="form-row">
+                <label>开始日期</label>
+                <input type="date" id="start" value="2026-09-01">
+                <label>结束日期</label>
+                <input type="date" id="end" value="2026-09-30">
+                <button onclick="queryAll()">查询</button>
+            </div>
+            <p id="msg" style="font-size:13px;color:#e74c3c;"></p>
+        </div>
+
+        <h3 style="color:#2c3e50;margin:18px 0 12px;">整体汇总（存储过程 usp_sales_statistics 输出参数）</h3>
+        <div class="card-grid" style="margin-top:0;">
+            <div class="card" style="cursor:default;"><h3 id="k_orders">-</h3><p>订单数量</p></div>
+            <div class="card" style="cursor:default;"><h3 id="k_qty">-</h3><p>销售数量</p></div>
+            <div class="card" style="cursor:default;"><h3 id="k_amount">-</h3><p>销售金额（元）</p></div>
+        </div>
+
+        <h3 style="color:#2c3e50;margin:24px 0 12px;">商品销售明细（存储过程结果集，仅有销售商品）</h3>
+        <div class="table-wrapper" style="margin-bottom:28px;">
+            <table>
+                <thead><tr><th>商品ID</th><th>商品名称</th><th>销售数量</th><th>销售金额</th><th>订单数</th></tr></thead>
+                <tbody id="detailBody"></tbody>
+            </table>
+        </div>
+
+        <h3 style="color:#2c3e50;margin:24px 0 12px;">销售汇总（表值函数 fn_sales_summary，含全部商品）</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>商品ID</th><th>商品名称</th><th>销售数量</th><th>销售金额</th><th>订单数</th></tr></thead>
+                <tbody id="summaryBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        function queryAll(){
+            const start=document.getElementById('start').value;
+            const end=document.getElementById('end').value;
+            const msg=document.getElementById('msg');
+            msg.textContent='';
+            if(!start||!end){msg.textContent='请选择完整的日期范围';return;}
+            if(start>end){msg.textContent='开始日期不能晚于结束日期';return;}
+
+            fetch(`/sales/api/statistics?start=${start}&end=${end}`)
+                .then(r=>r.json()).then(res=>{
+                    if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
+                    if(!res.success){msg.textContent=res.message;return;}
+                    const s=res.data;
+                    document.getElementById('k_orders').textContent=s.orderCount;
+                    document.getElementById('k_qty').textContent=s.salesQty;
+                    document.getElementById('k_amount').textContent=s.salesAmount;
+                    document.getElementById('detailBody').innerHTML =
+                        s.details.map(d=>`<tr><td>${d.productId}</td><td>${d.productName}</td>
+                            <td>${d.salesQty}</td><td>${d.salesAmount}</td><td>${d.orderCount}</td></tr>`).join('');
+                });
+
+            fetch(`/sales/api/summary?start=${start}&end=${end}`)
+                .then(r=>r.json()).then(res=>{
+                    if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
+                    if(!res.success)return;
+                    document.getElementById('summaryBody').innerHTML =
+                        res.data.map(d=>`<tr><td>${d.productId}</td><td>${d.productName}</td>
+                            <td>${d.salesQty}</td><td>${d.salesAmount}</td><td>${d.orderCount}</td></tr>`).join('');
+                });
+        }
+        function logout(){fetch('/logout',{method:'POST'}).then(()=>location.href='/login');}
+        queryAll();
+    </script>
+</body>
+</html>

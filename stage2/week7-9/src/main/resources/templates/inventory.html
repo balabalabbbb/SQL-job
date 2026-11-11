@@ -5,7 +5,7 @@
     <title>库存管理</title>
     <link rel="stylesheet" th:href="@{/style.css}">
 </head>
-<body>
+<body th:data-employee="${session.userType == 'employee'}">
     <div class="sidebar">
         <h3>小卖部管理</h3>
         <div class="nav-links">
@@ -14,6 +14,7 @@
             <a href="/inventory/" class="active">库存管理</a>
             <a href="/orders/">订单管理</a>
             <a href="/orders/create">创建订单</a>
+            <a th:if="${session.userType == 'employee'}" href="/sales/">销售统计</a>
         </div>
         <div class="user-info">
             <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
@@ -23,37 +24,99 @@
     </div>
     <div class="main">
         <h2>库存管理</h2>
-        <table id="invTable">
-            <thead><tr><th>商品ID</th><th>商品名称</th><th>库存数量</th><th>货架位置</th><th>预警阈值</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody></tbody>
-        </table>
-        <p id="msg"></p>
+
+        <div class="table-wrapper" style="margin-bottom:24px;">
+            <table id="invTable">
+                <thead><tr><th>商品ID</th><th>商品名称</th><th>库存数量</th><th>货架位置</th><th>预警阈值</th><th>状态</th><th th:if="${session.userType == 'employee'}">操作</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div th:if="${session.userType == 'employee'}" class="form-section">
+            <h3>库存调整（调用存储过程 usp_adjust_inventory）</h3>
+            <div class="form-row">
+                <label>商品编号</label>
+                <input type="text" id="f_product" readonly placeholder="点击右侧“调整”带入">
+                <label>调整数量</label>
+                <input type="number" id="f_qty" placeholder="正数入库/负数出库">
+                <label>调整原因</label>
+                <input type="text" id="f_reason" placeholder="如：补货入库、销售出库" style="min-width:200px;">
+                <button class="success" onclick="submitAdjust()">提交调整</button>
+            </div>
+            <p id="msg" style="font-size:13px;"></p>
+        </div>
+
+        <div th:if="${session.userType == 'employee'}" class="form-section">
+            <h3>补货建议（调用函数 fn_restock_qty）</h3>
+            <table id="restockTable">
+                <thead><tr><th>商品ID</th><th>商品名称</th><th>当前库存</th><th>预警阈值</th><th>建议补货量</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
     <script>
+        const isEmployee = document.body.dataset.employee === 'true';
+
         function loadInventory(){
             fetch('/inventory/api/list').then(r=>r.json()).then(res=>{
                 if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
-                const tbody=document.querySelector('#invTable tbody');
-                tbody.innerHTML=res.data.map(i=>{
-                    const low=i.quantity<=i.minThreshold;
+                document.querySelector('#invTable tbody').innerHTML = res.data.map(i=>{
+                    const low=i.quantity<=i.min_threshold;
+                    const action = isEmployee ? `<td><button onclick="fillAdjust('${i.productId}')">调整</button></td>` : '';
                     return `<tr class="${low?'low-stock':''}">
-                    <td>${i.productId}</td><td>${i.productName}</td>
-                    <td>${i.quantity}</td><td>${i.shelfLocation||''}</td>
-                    <td>${i.minThreshold}</td><td>${low?'<span style="color:red">低库存</span>':'正常'}</td>
-                    <td><button onclick="adjust('${i.productId}',${i.quantity},${i.minThreshold})">调整</button></td></tr>`;
+                        <td>${i.productId}</td><td>${i.productName}</td>
+                        <td>${i.quantity}</td><td>${i.shelfLocation||''}</td>
+                        <td>${i.minThreshold}</td>
+                        <td>${low?'<span class="status-tag warning">低库存</span>':'<span class="status-tag success">正常</span>'}</td>
+                        ${action}</tr>`;
                 }).join('');
             });
         }
-        function adjust(pid,qty,min){
-            const nq=prompt('新库存数量',qty);
-            if(nq===null)return;
-            const nm=prompt('预警阈值',min);
-            fetch('/inventory/api/update',{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({product_id:pid,quantity:parseInt(nq),min_threshold:parseInt(nm)})})
-            .then(r=>r.json()).then(res=>{alert(res.message);if(res.success)loadInventory();});
+
+        function fillAdjust(pid){
+            document.getElementById('f_product').value = pid;
+            document.getElementById('f_qty').focus();
         }
+
+        function submitAdjust(){
+            const product_id=document.getElementById('f_product').value;
+            const adjust_qty=document.getElementById('f_qty').value;
+            const reason=document.getElementById('f_reason').value;
+            const msg=document.getElementById('msg');
+            if(!product_id){msg.style.color='#e74c3c';msg.textContent='请先选择要调整的商品';return;}
+            if(adjust_qty===''){msg.style.color='#e74c3c';msg.textContent='请输入调整数量';return;}
+            fetch('/inventory/api/adjust',{
+                method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({product_id, adjust_qty:parseInt(adjust_qty), reason})
+            }).then(r=>r.json()).then(res=>{
+                if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
+                if(res.success){
+                    msg.style.color='#27ae60';msg.textContent=res.message;
+                    document.getElementById('f_qty').value='';
+                    document.getElementById('f_reason').value='';
+                    loadInventory();loadRestock();
+                }else{
+                    msg.style.color='#e74c3c';msg.textContent=res.message;
+                }
+            });
+        }
+
+        function loadRestock(){
+            if(!isEmployee)return;
+            fetch('/inventory/api/restock').then(r=>r.json()).then(res=>{
+                if(res.error_code)return;
+                document.querySelector('#restockTable tbody').innerHTML =
+                    (res.data.length===0)
+                    ? '<tr><td colspan="5" style="text-align:center;color:#95a5a6;">暂无需要补货的商品</td></tr>'
+                    : res.data.map(r=>`<tr><td>${r.productId}</td><td>${r.productName}</td>
+                        <td>${r.currentQty}</td><td>${r.minThreshold}</td>
+                        <td><b style="color:#e67e22;">${r.restockQty}</b></td></tr>`).join('');
+            });
+        }
+
         function logout(){fetch('/logout',{method:'POST'}).then(()=>location.href='/login');}
         loadInventory();
+        loadRestock();
     </script>
 </body>
 </html>

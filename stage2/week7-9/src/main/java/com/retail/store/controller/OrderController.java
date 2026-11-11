@@ -54,9 +54,7 @@ public class OrderController {
         if ("employee".equals(session.getAttribute("userType"))) {
             cashierId = (String) session.getAttribute("userId");
         }
-        if (request.getMemberId() == null) {
-            request.setMemberId("M0001");
-        }
+        // 会员可为空：空表示散客，折扣函数对 NULL 会员只适用通用金额门槛
         return ApiResponse.ok("订单创建成功", orderService.createOrder(request, cashierId));
     }
 

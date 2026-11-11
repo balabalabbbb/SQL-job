@@ -14,6 +14,7 @@
             <a href="/inventory/">库存管理</a>
             <a href="/orders/" class="active">订单管理</a>
             <a href="/orders/create">创建订单</a>
+            <a th:if="${session.userType == 'employee'}" href="/sales/">销售统计</a>
         </div>
         <div class="user-info">
             <p>用户：<span th:text="${session.userName} ?: '未登录'"></span></p>
@@ -25,7 +26,7 @@
         <h2>订单管理</h2>
         <div class="table-wrapper">
             <table id="orderTable">
-                <thead><tr><th>订单号</th><th>下单时间</th><th>金额</th><th>支付方式</th><th>状态</th><th>会员</th><th>收银员</th><th>操作</th></tr></thead>
+                <thead><tr><th>订单号</th><th>下单时间</th><th>折后金额</th><th>折扣</th><th>支付方式</th><th>状态</th><th>会员</th><th>收银员</th><th>操作</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -37,6 +38,7 @@
                     <tbody></tbody>
                 </table>
             </div>
+            <div id="discountInfo" style="margin-top:14px;font-size:14px;text-align:right;"></div>
         </div>
     </div>
     <script th:inline="javascript">
@@ -51,24 +53,36 @@
             fetch('/orders/api/list').then(r=>r.json()).then(res=>{
                 if(res.error_code==='AUTH_ERROR'){location.href='/login';return;}
                 const tbody=document.querySelector('#orderTable tbody');
-                tbody.innerHTML=res.data.map(o=>`<tr>
+                tbody.innerHTML=res.data.map(o=>{
+                    const disc = (o.discountAmount && Number(o.discountAmount)>0)
+                        ? `<span class="status-tag warning">${o.discountRate} 减¥${o.discountAmount}</span>`
+                        : '<span class="status-tag success">无</span>';
+                    return `<tr>
                 <td>${o.orderId}</td><td>${o.orderTime}</td>
-                <td>¥${o.totalAmount}</td><td>${o.paymentMethod}</td>
+                <td>¥${o.totalAmount}</td><td>${disc}</td><td>${o.paymentMethod}</td>
                 <td>${statusTag(o.orderStatus)}</td><td>${o.memberName||'散客'}</td>
                 <td>${o.employeeName||''}</td>
                 <td>
                     <button onclick="showDetail('${o.orderId}')">明细</button>
                     ${canCancel && o.orderStatus!=='已取消' && o.orderStatus!=='已退款' ?
                     `<button class="danger" onclick="cancelOrder('${o.orderId}')">取消</button>` : ''}
-                </td></tr>`).join('');
+                </td></tr>`;
+                }).join('');
             });
         }
         function showDetail(oid){
             fetch('/orders/api/'+oid).then(r=>r.json()).then(res=>{
                 document.getElementById('detailPanel').style.display='block';
                 document.querySelector('#detailTable tbody').innerHTML=res.data.items.map(i=>`<tr>
-                <td>${i.productId}</td><td>${i.productName}</td>
-                <td>${i.quantity}</td><td>¥${i.unitPrice}</td><td>¥${i.subtotal}</td></tr>`).join('');
+                <td>${i.product_id}</td><td>${i.product_name}</td>
+                <td>${i.quantity}</td><td>¥${i.unit_price}</td><td>¥${i.subtotal}</td></tr>`).join('');
+
+                const o=res.data.order;
+                const original=res.data.items.reduce((s,i)=>s+Number(i.subtotal),0);
+                document.getElementById('discountInfo').innerHTML =
+                    `折前金额：¥${original.toFixed(2)} &nbsp;|&nbsp; 折扣率：${o.discountRate}
+                     &nbsp;|&nbsp; 优惠金额：¥${Number(o.discountAmount).toFixed(2)}
+                     &nbsp;|&nbsp; <b style="color:#e74c3c;">实付：¥${Number(o.totalAmount).toFixed(2)}</b>`;
             });
         }
         function cancelOrder(oid){
