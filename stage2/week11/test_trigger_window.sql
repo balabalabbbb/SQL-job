@@ -3,8 +3,8 @@
 -- 小卖部管理系统 v1.0 - 第11周 触发器与窗口函数测试脚本
 -- ============================================================
 -- 覆盖场景：
---   单条插入、单条修改、多条修改、删除（库存审计触发器）
---   正常完成、重复完成、无明细、金额不一致、库存缺失（订单完成触发器）
+--   单条插入、单条修改、多条修改、删除、无变化更新（库存审计触发器）
+--   正常完成、重复完成、无明细、金额不一致、库存缺失、库存不足（订单完成触发器）
 --   负库存、重复库存（非法数据，数据库约束拒绝）
 -- 特性：使用独立测试数据 P9001~P9003 / ORDTEST*，结尾自动清理，
 --       不污染基线；可重复执行。本文件为 UTF-8 with BOM。
@@ -82,6 +82,18 @@ SELECT log_id, product_id, quantity_before, quantity_after,
 FROM inventory_change_log
 WHERE product_id LIKE 'P900_'
 ORDER BY log_id;
+GO
+
+-- ============================================================
+-- 测试 12：数量未变化的 UPDATE 不写审计日志
+-- 对 P9001 执行不改变 quantity 的 UPDATE，审计记录数应保持不变。
+-- ============================================================
+PRINT '----- 测试12：数量未变化的 UPDATE（预期不写日志）-----';
+DECLARE @cnt_before INT = (SELECT COUNT(*) FROM inventory_change_log WHERE product_id='P9001');
+UPDATE inventory SET quantity = quantity WHERE product_id = 'P9001';  -- 数量不变
+DECLARE @cnt_after INT = (SELECT COUNT(*) FROM inventory_change_log WHERE product_id='P9001');
+SELECT @cnt_before AS log_before, @cnt_after AS log_after,
+       CASE WHEN @cnt_before = @cnt_after THEN '通过：未写日志' ELSE '失败：多写了日志' END AS result;
 GO
 
 -- ============================================================
@@ -164,6 +176,26 @@ VALUES
     ('ORDTESTINV','P9003',1,30.00,30.00);
 
 UPDATE orders SET order_status = '已完成' WHERE order_id = 'ORDTESTINV';
+GO
+
+-- ============================================================
+-- 测试 13：库存数量不足（预期错误 51008，回滚）
+-- P9001 当前库存 125，本单购买 200 > 125；金额本身一致，
+-- 但在库存充足性检查处被拒绝，防止超卖。
+-- ============================================================
+PRINT '----- 测试13：库存不足（预期报错 51008）-----';
+INSERT INTO orders
+    (order_id, order_time, total_amount, payment_method,
+     order_status, member_id, cashier_id)
+VALUES
+    ('ORDTESTSHORT','2026-11-17 14:00:00',2000.00,'现金','已支付',NULL,1);
+
+INSERT INTO order_item
+    (order_id, product_id, quantity, unit_price, subtotal)
+VALUES
+    ('ORDTESTSHORT','P9001',200,10.00,2000.00);
+
+UPDATE orders SET order_status = '已完成' WHERE order_id = 'ORDTESTSHORT';
 GO
 
 -- ============================================================
