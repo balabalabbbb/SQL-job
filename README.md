@@ -89,38 +89,39 @@ java -jar target/retail-store-1.0.0.jar
 SQL-job/
 ├── README.md                    # 本文件（项目总览）
 ├── .gitignore
+├── fixes/                       # 历史脚本修复补丁
 ├── stage1/                      # 第一阶段：v0.1 数据库原型（第1-4周）
-│   ├── README.md
 │   ├── sql/                     # 统一SQL脚本（01-09）
 │   ├── result/                  # 执行结果+截图
+│   ├── week1/ ~ week4/          # 各周详细交付物
 │   ├── 第一阶段报告.md
 │   ├── AI使用记录.md
-│   ├── 小组分工报告.md
-│   └── week1/ ~ week4/          # 各周详细交付物
+│   └── 小组分工报告.md
 ├── stage2/                      # 第二阶段：规范化与Web应用（第5-9周）
-    ├── week5/                   # ER图设计与业务规则
-    ├── week6/                   # 函数依赖分析与规范化迁移（v0.1→v1.0）
-    └── week7-9/                 # Spring Boot Web应用（四层架构）
-        ├── pom.xml
-        ├── src/main/java/com/retail/store/
-        │   ├── controller/      # 页面层（4个Controller）
-        │   ├── service/         # 业务层（4个Service，含事务）
-        │   ├── repository/      # 数据访问层（6个Repository）
-        │   ├── entity/          # 实体类（7个）
-        │   ├── exception/       # 异常体系（8类+全局处理器）
-        │   ├── dto/             # 数据传输对象
-        │   └── config/          # 安全配置
-        ├── src/main/resources/
-        │   ├── templates/       # Thymeleaf页面（6个）
-        │   ├── static/          # CSS样式
-        │   └── application.properties
-        ├── integration_test.ps1 # 集成测试脚本
-        ├── README.md            # 操作手册
-        ├── 阶段报告.md
-        ├── 小组分工报告.md
-        └── AI使用记录.md
+│   ├── week5/                   # ER图设计与业务规则
+│   ├── week6/                   # 函数依赖分析与规范化迁移（v0.1→v1.0）
+│   ├── week7-9/                 # Spring Boot Web应用（四层架构）
+│   │   ├── pom.xml
+│   │   ├── src/main/java/com/retail/store/
+│   │   │   ├── controller/      # 页面层（4个Controller）
+│   │   │   ├── service/         # 业务层（4个Service，含事务）
+│   │   │   ├── repository/      # 数据访问层（6个Repository）
+│   │   │   ├── entity/          # 实体类（7个）
+│   │   │   ├── exception/       # 异常体系（8类+全局处理器）
+│   │   │   ├── dto/             # 数据传输对象
+│   │   │   └── config/          # 安全配置
+│   │   ├── src/main/resources/
+│   │   │   ├── templates/       # Thymeleaf页面（6个）
+│   │   │   ├── static/          # CSS样式
+│   │   │   └── application.properties
+│   │   ├── integration_test.ps1 # 集成测试脚本
+│   │   ├── README.md            # 操作手册
+│   │   ├── 阶段报告.md
+│   │   ├── 小组分工报告.md
+│   │   └── AI使用记录.md
+│   └── result/                  # 第二阶段成果（ER图、数据字典、Web测试等）
 └── stage3/                      # 第三阶段：高级数据库对象与业务事务（第10周起）
-    ├── week10/                  # 存储过程与函数
+    ├── week10/                  # 存储过程与函数（含 result/images 截图）
     ├── week11/                  # 触发器与窗口函数
     └── week12/                  # 递归查询与业务事务
 ```
@@ -141,6 +142,6 @@ SQL-job/
 
 | 姓名 | 学号 | 角色 | 贡献 |
 |---|---|---|---|
-| 胡海博 | 24325098 | 组长 | 50% |
-| 胡懿桓 | 24325103 | 组员 | 25% |
-| 林一 | 24325168 | 组员 | 25% |
+| 胡海博 | 2024325098 | 组长 | 50% |
+| 胡懿桓 | 2024325103 | 组员 | 25% |
+| 林一 | 2024325168 | 组员 | 25% |
