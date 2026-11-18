@@ -21,6 +21,7 @@ GO
 DELETE FROM order_item       WHERE order_id LIKE 'ORD12%';
 DELETE FROM orders           WHERE order_id LIKE 'ORD12%';
 DELETE FROM restock_order    WHERE restock_id LIKE 'RST12%';
+DELETE FROM inventory_adjustment WHERE product_id IN ('P8001','P8002') AND reason = '补货入库';
 DELETE FROM inventory        WHERE product_id IN ('P8001','P8002');
 DELETE FROM inventory_change_log WHERE product_id IN ('P8001','P8002');
 DELETE FROM product          WHERE product_id IN ('P8001','P8002');
@@ -97,6 +98,10 @@ EXEC dbo.usp_restock_inbound_transaction @restock_id = 'RST12OK', @simulate_fail
 SELECT restock_id, product_id, restock_quantity, restock_status, inbound_time
 FROM restock_order WHERE restock_id = 'RST12OK';
 SELECT product_id, quantity FROM inventory WHERE product_id = 'P8002';
+-- 核对库存调整流水（预期 1 条，reason=补货入库，前后数量正确）
+SELECT product_id, adjust_quantity, quantity_before, quantity_after, reason
+FROM inventory_adjustment
+WHERE product_id = 'P8002' AND reason = '补货入库';
 GO
 
 PRINT '----- 补货测试2：重复入库（预期 52102，库存不再增加）-----';
@@ -110,9 +115,13 @@ PRINT '----- 补货测试3：中途失败（预期 52199，库存与单据全部
 SELECT quantity AS P8001_before FROM inventory WHERE product_id = 'P8001';
 EXEC dbo.usp_restock_inbound_transaction @restock_id = 'RST12FAIL', @simulate_fail = 1;
 GO
-PRINT '【回滚后核对：P8001 库存不变，单据仍待入库，审计无新增】';
+PRINT '【回滚后核对：P8001 库存不变，单据仍待入库，调整流水与审计均无新增】';
 SELECT product_id, quantity FROM inventory WHERE product_id = 'P8001';
 SELECT restock_id, restock_status, inbound_time FROM restock_order WHERE restock_id = 'RST12FAIL';
+-- 调整流水应被回滚：预期 0 条
+SELECT COUNT(*) AS adjustment_rollback_count
+FROM inventory_adjustment
+WHERE product_id = 'P8001' AND reason = '补货入库';
 GO
 
 PRINT '----- 补货测试4：补货单不存在（预期 52101）-----';
@@ -143,6 +152,7 @@ GO
 DELETE FROM order_item       WHERE order_id LIKE 'ORD12%';
 DELETE FROM orders           WHERE order_id LIKE 'ORD12%';
 DELETE FROM restock_order    WHERE restock_id LIKE 'RST12%';
+DELETE FROM inventory_adjustment WHERE product_id IN ('P8001','P8002') AND reason = '补货入库';
 DELETE FROM inventory        WHERE product_id IN ('P8001','P8002');
 DELETE FROM inventory_change_log WHERE product_id IN ('P8001','P8002');
 DELETE FROM product          WHERE product_id IN ('P8001','P8002');

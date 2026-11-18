@@ -64,14 +64,28 @@ BEGIN
         ) need ON need.product_id = inv.product_id
         WHERE inv.quantity >= need.req_quantity;
 
-        -- 4) 受影响行数必须等于该订单涉及的不同商品数，否则说明有商品缺失/不足
+        -- 4) 受影响行数必须等于该订单涉及的不同商品数，否则定位问题商品并报错
         DECLARE @affected INT = @@ROWCOUNT;
         DECLARE @product_count INT = (
             SELECT COUNT(DISTINCT product_id)
             FROM dbo.order_item WHERE order_id = @order_id
         );
         IF @affected <> @product_count
-            THROW 52005, '商品库存记录缺失或库存不足，事务回滚', 1;
+        BEGIN
+            DECLARE @bad_pid VARCHAR(10);
+            SELECT TOP 1 @bad_pid = need.product_id
+            FROM (
+                SELECT product_id, SUM(quantity) AS req_quantity
+                FROM dbo.order_item WHERE order_id = @order_id
+                GROUP BY product_id
+            ) need
+            LEFT JOIN dbo.inventory inv ON inv.product_id = need.product_id
+            WHERE inv.inventory_id IS NULL OR inv.quantity < need.req_quantity;
+
+            DECLARE @err_msg VARCHAR(200) =
+                CONCAT('商品 ', ISNULL(@bad_pid, '?'), ' 库存记录缺失或库存不足，事务回滚');
+            THROW 52005, @err_msg, 1;
+        END
 
         COMMIT TRANSACTION;
         PRINT '订单 ' + @order_id + ' 已完成并提交，库存已扣减一次';
