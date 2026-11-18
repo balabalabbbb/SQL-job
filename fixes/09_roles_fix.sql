@@ -1,7 +1,7 @@
 -- ============================================================
 -- 09_roles_fix.sql
 -- 角色权限补全（幂等，可重复执行）
-处理两个问题：
+-- 处理两个问题：
 --   1. 初次执行时视图尚未创建，对视图的 GRANT 失败 -> 现在视图已存在，补授权
 --   2. guest 是 SQL Server 内置数据库用户名，无法 CREATE ROLE guest
 --      -> 非会员只读语义改由内置 guest 用户 + 测试用户 guest_test 直接授权实现
@@ -36,7 +36,7 @@ GRANT SELECT, INSERT  ON order_item TO cashier;
 GRANT SELECT          ON member     TO cashier;
 GRANT SELECT ON v_order_detail      TO cashier;
 GRANT SELECT ON v_product_sales     TO cashier;
-GRANT SELECT ON v_inventory_status     TO cashier;
+GRANT SELECT ON v_inventory_status  TO cashier;
 GO
 
 -- ---------- member：自助只读 ----------
