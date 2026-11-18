@@ -60,6 +60,14 @@ BEGIN
 END
 GO
 
+-- 审计表按商品查询变化历史的非聚集索引（幂等，可重复执行）
+IF NOT EXISTS (SELECT 1 FROM sys.indexes
+               WHERE name = 'ix_log_product'
+                 AND object_id = OBJECT_ID('dbo.inventory_change_log'))
+    CREATE NONCLUSTERED INDEX ix_log_product
+        ON dbo.inventory_change_log(product_id, operation_time);
+GO
+
 -- ============================================================
 -- 第 2 部分：库存审计触发器（AFTER INSERT/UPDATE/DELETE，支持多行）
 -- 关键：inserted / deleted 是集合，可能一次包含多行，
@@ -97,7 +105,8 @@ BEGIN
     SELECT i.product_id, d.quantity, i.quantity, i.quantity - d.quantity,
            'UPDATE', SUSER_SNAME(), SYSDATETIME()
     FROM inserted i
-    INNER JOIN deleted d ON d.inventory_id = i.inventory_id;
+    INNER JOIN deleted d ON d.inventory_id = i.inventory_id
+    WHERE i.quantity <> d.quantity;   -- 数量未变化的 UPDATE 不写审计日志
 END;
 GO
 
@@ -208,6 +217,18 @@ BEGIN
     BEGIN
         ROLLBACK TRANSACTION;
         THROW 51007, '订单金额与明细、折扣不一致，不能完成', 1;
+    END
+
+    -- 检查 8：库存数量必须充足，不能超卖（当前库存 >= 购买数量）
+    IF EXISTS (
+        SELECT 1 FROM inserted i
+        INNER JOIN dbo.order_item oi ON oi.order_id = i.order_id
+        INNER JOIN dbo.inventory inv ON inv.product_id = oi.product_id
+        WHERE i.order_status = '已完成' AND inv.quantity < oi.quantity
+    )
+    BEGIN
+        ROLLBACK TRANSACTION;
+        THROW 51008, '商品库存数量不足，不能完成', 1;
     END
 END;
 GO
