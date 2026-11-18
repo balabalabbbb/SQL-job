@@ -4,7 +4,7 @@
 -- ============================================================
 -- 覆盖：
 --   订单事务：正常提交、重复完成、订单不存在、无明细、库存不足
---   补货事务：正常提交、重复入库、中途失败回滚、补货单不存在
+--   补货事务：正常提交、重复入库、中途失败回滚、补货单不存在、补货量非正数拒绝
 -- 每步前后检查 orders / order_item / inventory / restock_order /
 --   inventory_change_log 全部相关表，不只展示报错。
 -- 独立测试数据 P8001/P8002、ORD12*、RST12*，结尾自动清理，可重复执行。
@@ -117,6 +117,14 @@ GO
 
 PRINT '----- 补货测试4：补货单不存在（预期 52101）-----';
 EXEC dbo.usp_restock_inbound_transaction @restock_id = 'RST12NOEXIST', @simulate_fail = 0;
+GO
+
+-- 2.5 补货量非正数：由表 CHECK 约束 chk_restock_quantity 在写入时拒绝（Msg 547）
+PRINT '----- 补货测试5：补货量非正数（预期 547 拒绝，不写入）-----';
+INSERT INTO restock_order (restock_id, product_id, restock_quantity, operator_id)
+VALUES ('RST12ZERO','P8001',0,1);
+INSERT INTO restock_order (restock_id, product_id, restock_quantity, operator_id)
+VALUES ('RST12NEG','P8001',-5,1);
 GO
 
 -- ############################################################
