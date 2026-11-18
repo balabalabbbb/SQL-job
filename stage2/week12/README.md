@@ -23,7 +23,19 @@ sqlcmd -S "localhost\SQLEXPRESS" -C -d retail_store -i restock_transaction.sql
 sqlcmd -S "localhost\SQLEXPRESS" -C -d retail_store -i test_week12.sql
 ```
 
-## 一、递归逻辑
+## 一、表关系与统一库存扣减入口
+
+围绕商品主数据 `product`，各表关系如下：
+
+- `inventory`：通过 product_id 挂在 product 上，一商品一条库存（唯一约束）。
+- `orders` 1—N `order_item`：订单明细通过 order_id 关联订单、通过 product_id 关联商品。
+- `restock_order`：补货单通过 product_id 关联商品，用 restock_status 记录待入库/已入库。
+- `inventory_change_log`：由第11周审计触发器在 inventory 变化时写入，记录前后数量与操作类型。
+- `category_hierarchy`：独立的层级分类表，自引用 parent_id，不影响原 category 与 product 外键。
+
+**统一库存扣减入口**：库存扣减只在订单完成事务 `usp_complete_order_transaction` 内发生；第11周触发器 `trg_order_complete_check` 只校验、不扣库存。已完成订单再次调用直接拒绝（52002），因此一次业务只扣一次、不会重复扣减。
+
+## 二、递归逻辑
 
 - 层级表 `category_hierarchy(cat_id, cat_name, parent_id)`，`parent_id` 自引用外键指向同表 `cat_id`。
 - 递归 CTE 由两部分组成：
@@ -32,7 +44,7 @@ sqlcmd -S "localhost\SQLEXPRESS" -C -d retail_store -i test_week12.sql
 - 输出列：`cat_id、cat_name、parent_id、category_level、hierarchy_path`。
 - 路径列在锚点与递归部分统一为 `VARCHAR(400)`，`OPTION (MAXRECURSION 100)` 限制深度。
 
-## 二、事务边界与对象调用关系
+## 三、事务边界与对象调用关系
 
 ### 订单完成事务 `usp_complete_order_transaction @order_id`
 
@@ -54,7 +66,7 @@ sqlcmd -S "localhost\SQLEXPRESS" -C -d retail_store -i test_week12.sql
 4. 否则更新单据为「已入库」并写入入库时间，`COMMIT`。
 5. 失败时 `ROLLBACK`，库存增加与审计日志全部撤销。
 
-## 三、设计要点（对应任务提示）
+## 四、设计要点（对应任务提示）
 
 - 库存扣减使用带库存条件的 UPDATE 并检查行数，不依赖事务外的一次查询。
 - 由存储过程这一层统一负责事务边界与提交，Web/存储过程/触发器不重复扣减、不各自提交。
