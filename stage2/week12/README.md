@@ -61,10 +61,10 @@ sqlcmd -S "localhost\SQLEXPRESS" -C -d retail_store -i test_week12.sql
 ### 补货入库事务 `usp_restock_inbound_transaction @restock_id, @simulate_fail`
 
 1. 前置检查：单据存在（52101）、非已入库（52102）、数量为正（52103）、商品与库存记录存在（52104）。
-2. `BEGIN TRAN` 后先增加库存（审计触发器在同事务写日志）。
-3. `@simulate_fail=1` 时在加库存后、单据状态更新前主动 `THROW 52199`，制造「部分写入后失败」。
-4. 否则更新单据为「已入库」并写入入库时间，`COMMIT`。
-5. 失败时 `ROLLBACK`，库存增加与审计日志全部撤销。
+2. `BEGIN TRAN` 后用 `UPDLOCK,HOLDLOCK` 读取调整前库存，再增加库存。
+3. 写一条 `inventory_adjustment` 调整流水（原因「补货入库」，含前后数量），与第10周 `usp_adjust_inventory` 审计口径一致。
+4. `@simulate_fail=1` 时在加库存/写流水后、单据状态更新前主动 `THROW 52199`，制造「部分写入后失败」。
+5. 否则更新单据为「已入库」并写入入库时间，`COMMIT`；失败时 `ROLLBACK`，库存、调整流水与审计日志全部撤销。
 
 ## 四、设计要点（对应任务提示）
 
