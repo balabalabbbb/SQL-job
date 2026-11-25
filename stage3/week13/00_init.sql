@@ -83,7 +83,13 @@ VALUES
     ('ORD_CONC_B', 'P', 6, 5.00, 30.00);
 GO
 
--- 6) 基线核对
+-- 6) 清理重建过程中审计触发器写入的 P/Q 日志（删旧库存的 DELETE、插新库存的 INSERT），
+--    保证基线 changelog 干净，与“每轮证据从干净基线开始”一致
+DELETE FROM dbo.inventory_change_log
+WHERE product_id IN ('P','Q');
+GO
+
+-- 7) 基线核对
 SELECT product_id, quantity
 FROM dbo.inventory
 WHERE product_id IN ('P','Q')

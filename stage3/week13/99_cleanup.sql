@@ -11,6 +11,12 @@ GO
 SET NOCOUNT ON;
 GO
 
+-- 删除顺序说明：
+-- 1) 有外键指向 product 的表（order_item/restock_order/inventory/inventory_adjustment）
+--    必须在 product 之前删除；
+-- 2) 审计触发器 trg_inventory_audit 在删除 inventory 时会自动向 inventory_change_log
+--    回写 DELETE 记录，因此 changelog 必须放在最后删，否则会残留触发器新写入的审计行。
+
 DELETE FROM dbo.order_item
 WHERE order_id IN ('ORD_CONC_A','ORD_CONC_B');
 
@@ -20,16 +26,18 @@ WHERE order_id IN ('ORD_CONC_A','ORD_CONC_B');
 DELETE FROM dbo.restock_order
 WHERE restock_id IN ('RST_P5','RST_Q5');
 
-DELETE FROM dbo.inventory_change_log
+-- 删除库存，触发审计触发器写入 DELETE 日志
+DELETE FROM dbo.inventory
 WHERE product_id IN ('P','Q');
 
 DELETE FROM dbo.inventory_adjustment
 WHERE product_id IN ('P','Q');
 
-DELETE FROM dbo.inventory
+DELETE FROM dbo.product
 WHERE product_id IN ('P','Q');
 
-DELETE FROM dbo.product
+-- 最后清理审计日志（含上一步触发器刚写入的 DELETE 记录）
+DELETE FROM dbo.inventory_change_log
 WHERE product_id IN ('P','Q');
 GO
 
