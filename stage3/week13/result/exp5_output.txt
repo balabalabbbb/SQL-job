@@ -15,16 +15,18 @@ ORD_CONC_A|已完成
 回归2：P=10，A、B 两个会话同时完成购买 P×6 的不同订单 —— 仅一单成功
 ======================================================================
 初始 P = 10
+会话 A8 已建立，@@SPID = 67
+会话 B8 已建立，@@SPID = 69
 --- A 会话输出 ---
-订单 ORD_CONC_A 已完成并提交，库存已扣减一次
+消息 51008，级别 16，状态 1，服务器 DESKTOP-54PM7FT\SQLEXPRESS，过程 trg_order_complete_check，第 120 行
+
+商品库存数量不足，不能完成
 
 --- B 会话输出 ---
-消息 52005，级别 16，状态 1，服务器 DESKTOP-54PM7FT\SQLEXPRESS，过程 dbo.usp_complete_order_transaction，第 66 行
-
-商品 P 库存记录缺失或库存不足，事务回滚
+订单 ORD_CONC_B 已完成并提交，库存已扣减一次
 
 最终 P = 4（预期 4）
 --- 两个订单最终状态（应一个已完成、一个待支付）---
-ORD_CONC_A|已完成
-ORD_CONC_B|待支付
+ORD_CONC_A|待支付
+ORD_CONC_B|已完成
 
