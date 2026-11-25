@@ -5,33 +5,35 @@
 A1 已执行：A 持有 P 的排他锁，未提交
 B1 已发出：B 等待 A 释放 P 的锁
 --- 监控 dm_exec_requests（阻塞者/等待者）---
-75|74|suspended|LCK_M_U|KEY: 5:72057594046054400 (70ed84e0d402)
+59|58|suspended|LCK_M_U|KEY: 5:72057594046054400 (3b4573510465)
 --- 监控 dm_tran_locks（锁模式与授予/等待状态）---
-68|DATABASE|S|GRANT|NULL
-74|DATABASE|S|GRANT|NULL
-74|KEY|X|GRANT|inventory|(bfa4333c4a59)
-74|KEY|X|GRANT|inventory_change_log|(cd10aad6e756)
-74|KEY|X|GRANT|inventory|(0dd823e18933)
-74|KEY|X|GRANT|inventory|(70ed84e0d402)
-74|KEY|X|GRANT|inventory_change_log|(6835335383db)
-74|OBJECT|IX|GRANT|NULL
-74|OBJECT|IX|GRANT|NULL
-74|OBJECT|IX|GRANT|NULL
-74|PAGE|IX|GRANT|inventory|1:440
-74|PAGE|IX|GRANT|inventory|1:560
-74|PAGE|IX|GRANT|inventory_change_log|1:776
-74|PAGE|IX|GRANT|inventory_change_log|1:784
-75|DATABASE|S|GRANT|NULL
-75|KEY|U|GRANT|inventory|(cc9c381108b4)
-75|KEY|U|WAIT|inventory|(70ed84e0d402)
-75|OBJECT|IX|GRANT|NULL
-75|PAGE|IU|GRANT|inventory|1:456
-75|PAGE|IU|GRANT|inventory|1:440
+58|DATABASE|S|GRANT|NULL|
+58|KEY|X|GRANT|inventory|(f40cc48d9a3e)
+58|KEY|X|GRANT|inventory_change_log|(a22a52430f2a)
+58|KEY|X|GRANT|inventory|(4670d4505954)
+58|KEY|X|GRANT|inventory|(3b4573510465)
+58|KEY|X|GRANT|inventory_change_log|(deaa2d9fac8a)
+58|OBJECT|IX|GRANT|NULL|
+58|OBJECT|IX|GRANT|NULL|
+58|OBJECT|IX|GRANT|NULL|
+58|PAGE|IX|GRANT|inventory|1:440
+58|PAGE|IX|GRANT|inventory|1:560
+58|PAGE|IX|GRANT|inventory_change_log|1:776
+58|PAGE|IX|GRANT|inventory_change_log|1:784
+59|DATABASE|S|GRANT|NULL|
+59|KEY|U|GRANT|inventory|(cc9c381108b4)
+59|KEY|U|WAIT|inventory|(3b4573510465)
+59|OBJECT|IX|GRANT|NULL|
+59|PAGE|IU|GRANT|inventory|1:440
+59|PAGE|IU|GRANT|inventory|1:456
+61|DATABASE|S|GRANT|NULL|
 A2：A 提交，释放 P 的锁
 最终 P 库存 = 13（预期 13）
 --- B 会话输出（确认其等待后继续执行）---
 
+
 (1 行受影响)
+
 
 ======================================================================
 场景：A 扣 P 2 件不提交，B 给 P 加 5 件 -> A 执行 Rollback
@@ -40,31 +42,33 @@ A2：A 提交，释放 P 的锁
 A1 已执行：A 持有 P 的排他锁，未提交
 B1 已发出：B 等待 A 释放 P 的锁
 --- 监控 dm_exec_requests（阻塞者/等待者）---
-75|74|suspended|LCK_M_U|KEY: 5:72057594046054400 (b184d8fe5d7b)
+60|59|suspended|LCK_M_U|KEY: 5:72057594046054400 (c3a9ea6d9700)
 --- 监控 dm_tran_locks（锁模式与授予/等待状态）---
-74|DATABASE|S|GRANT|NULL
-74|KEY|X|GRANT|inventory|(7ecd6f22c320)
-74|KEY|X|GRANT|inventory_change_log|(9b2f0615b980)
-74|KEY|X|GRANT|inventory_change_log|(7b1f818f0454)
-74|KEY|X|GRANT|inventory|(ccb17fff004a)
-74|KEY|X|GRANT|inventory|(b184d8fe5d7b)
-74|OBJECT|IX|GRANT|NULL
-74|OBJECT|IX|GRANT|NULL
-74|OBJECT|IX|GRANT|NULL
-74|PAGE|IX|GRANT|inventory|1:440
-74|PAGE|IX|GRANT|inventory|1:560
-74|PAGE|IX|GRANT|inventory_change_log|1:776
-74|PAGE|IX|GRANT|inventory_change_log|1:784
-75|DATABASE|S|GRANT|NULL
-75|KEY|U|GRANT|inventory|(cc9c381108b4)
-75|KEY|U|WAIT|inventory|(b184d8fe5d7b)
-75|OBJECT|IX|GRANT|NULL
-75|PAGE|IU|GRANT|inventory|1:440
-75|PAGE|IU|GRANT|inventory|1:456
-76|DATABASE|S|GRANT|NULL
+58|DATABASE|S|GRANT|NULL|
+59|DATABASE|S|GRANT|NULL|
+59|KEY|X|GRANT|inventory|(0ce05db1095b)
+59|KEY|X|GRANT|inventory_change_log|(2fbc6f73243d)
+59|KEY|X|GRANT|inventory_change_log|(1fc3718125f3)
+59|KEY|X|GRANT|inventory|(c3a9ea6d9700)
+59|KEY|X|GRANT|inventory|(be9c4d6cca31)
+59|OBJECT|IX|GRANT|NULL|
+59|OBJECT|IX|GRANT|NULL|
+59|OBJECT|IX|GRANT|NULL|
+59|PAGE|IX|GRANT|inventory|1:440
+59|PAGE|IX|GRANT|inventory|1:560
+59|PAGE|IX|GRANT|inventory_change_log|1:776
+59|PAGE|IX|GRANT|inventory_change_log|1:784
+60|DATABASE|S|GRANT|NULL|
+60|KEY|U|WAIT|inventory|(c3a9ea6d9700)
+60|KEY|U|GRANT|inventory|(cc9c381108b4)
+60|OBJECT|IX|GRANT|NULL|
+60|PAGE|IU|GRANT|inventory|1:456
+60|PAGE|IU|GRANT|inventory|1:440
 A2：A 回滚，扣减撤销，释放 P 的锁
 最终 P 库存 = 15（预期 15）
 --- B 会话输出（确认其等待后继续执行）---
 
+
 (1 行受影响)
+
 

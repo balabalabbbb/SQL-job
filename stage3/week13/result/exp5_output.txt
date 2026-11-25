@@ -16,8 +16,12 @@ ORD_CONC_A|已完成
 ======================================================================
 初始 P = 10
 --- A 会话输出 ---
+订单 ORD_CONC_A 已完成并提交，库存已扣减一次
+
 --- B 会话输出 ---
-消息 52005，级别 16，状态 1，服务器 DESKTOP-54PM7FT\SQLEXPRESS，过程 dbo.usp_complete_order_transaction，第 66 行（库存不足，事务回滚）
+消息 52005，级别 16，状态 1，服务器 DESKTOP-54PM7FT\SQLEXPRESS，过程 dbo.usp_complete_order_transaction，第 66 行
+
+商品 P 库存记录缺失或库存不足，事务回滚
 
 最终 P = 4（预期 4）
 --- 两个订单最终状态（应一个已完成、一个待支付）---
