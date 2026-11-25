@@ -38,7 +38,7 @@ function Run-Scenario {
     Write-Output "A1 已执行：A 持有 P 的排他锁，未提交"
 
     Send-Sql -Rec $B -Sql "BEGIN TRANSACTION;`nUPDATE dbo.inventory SET quantity = quantity + 5, last_updated=SYSDATETIME() WHERE product_id='P';`nGO`n"
-    Start-Sleep -Milliseconds 1500
+    [void](Wait-Blocked -TimeoutMs 10000)
     Write-Output "B1 已发出：B 等待 A 释放 P 的锁"
 
     Write-Output "--- 监控 dm_exec_requests（阻塞者/等待者）---"
@@ -53,10 +53,10 @@ function Run-Scenario {
         Send-Sql -Rec $A -Sql "ROLLBACK TRANSACTION;`nGO`n"
         Write-Output "A2：A 回滚，扣减撤销，释放 P 的锁"
     }
-    Start-Sleep -Milliseconds 1200
-
     Send-Sql -Rec $B -Sql "COMMIT TRANSACTION;`nGO`n"
-    Start-Sleep -Milliseconds 800
+    $expected = if ($Mode -eq 'Commit') { 13 } else { 15 }
+    [void](Wait-Qty -ProductId 'P' -Expected $expected -TimeoutMs 15000)
+    [void](Wait-TranCount -Expected 0 -TimeoutMs 10000)
 
     $final = Get-Qty 'P'
     Write-Output ("最终 P 库存 = {0}（预期 {1}）" -f $final, $(if($Mode -eq 'Commit'){13}else{15}))

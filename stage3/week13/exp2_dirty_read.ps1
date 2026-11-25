@@ -27,7 +27,7 @@ function Run-DirtyRead {
     Write-Output "A1：A 已把 P 改为 15，未提交"
 
     Send-Sql -Rec $B -Sql "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;`nSELECT quantity AS r1 FROM dbo.inventory WHERE product_id='P';`nGO`n"
-    Start-Sleep -Milliseconds 800
+    [void](Wait-Until -TimeoutMs 10000 -Label 'B1脏读15' -Condition { (Get-SqlOut $B) -match '(?m)^\s*15\s*$' })
     Write-Output "--- B1 结果（脏读，应读到 15）---"
     (Get-SqlOut -Rec $B) -split "`n" | Where-Object { $_ -match '^\s*\d+\s*$' } | Select-Object -First 1
 
@@ -36,7 +36,7 @@ function Run-DirtyRead {
     Write-Output ("A2：A 回滚，真实 P 恢复为 {0}" -f (Get-Qty 'P'))
 
     Send-Sql -Rec $B -Sql "SELECT quantity AS r2 FROM dbo.inventory WHERE product_id='P';`nGO`n"
-    Start-Sleep -Milliseconds 1200
+    [void](Wait-Until -TimeoutMs 10000 -Label 'B2读到10' -Condition { (Get-SqlOut $B) -match '(?m)^\s*10\s*$' })
     Write-Output "--- B2 结果（应读到 10，证明 15 是脏数据）---"
     (Get-SqlOut -Rec $B) -split "`n" | Where-Object { $_ -match '^\s*\d+\s*$' } | Select-Object -Last 1
 
@@ -58,13 +58,13 @@ function Run-CommittedRead {
     Write-Output "A1：A 已把 P 改为 15，未提交"
 
     Send-Sql -Rec $B -Sql "SET TRANSACTION ISOLATION LEVEL READ COMMITTED;`nSELECT quantity AS r1 FROM dbo.inventory WHERE product_id='P';`nGO`n"
-    Start-Sleep -Milliseconds 1200
+    [void](Wait-Blocked -TimeoutMs 10000)
     Write-Output "B1 已发出：B 的共享锁等待 A 释放"
     Write-Output "--- 监控 dm_exec_requests（应见 B 等待 LCK_M_S）---"
     Invoke-Monitor -Sql $blockSql
 
     Send-Sql -Rec $A -Sql "ROLLBACK TRANSACTION;`nGO`n"
-    Start-Sleep -Milliseconds 1200
+    [void](Wait-Until -TimeoutMs 15000 -Label 'B读到已提交10' -Condition { (Get-SqlOut $B) -match '(?m)^\s*10\s*$' })
     Write-Output "A2：A 回滚并释放锁，B 的读取继续"
 
     Write-Output "--- B1 最终结果（应读到已提交的 10，读不到 15）---"
