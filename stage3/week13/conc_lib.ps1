@@ -30,8 +30,24 @@ function Start-SqlSession {
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi
     [void]$proc.Start()
-    $rec = @{ Name = $Name; Proc = $proc; OutFile = $outFile }
+    $rec = @{ Name = $Name; Proc = $proc; OutFile = $outFile; Spid = 0 }
     $script:Sessions[$proc.Id] = $rec
+
+    # 显式确认会话独立性：调用 @@SPID 取本会话 ID。
+    # 结果带“SPID=”前缀，不是纯数字行，避免被后续实验的纯数字提取误读。
+    Send-Sql -Rec $rec -Sql "SELECT 'SPID=' + CAST(@@SPID AS varchar(10)) AS session_info;`nGO`n"
+    $ok = Wait-Until -TimeoutMs 10000 -Label ("会话 {0} 读取 @@SPID" -f $Name) -Condition {
+        if (-not (Test-Path $rec.OutFile)) { return $false }
+        return [bool]((Get-Content -Raw $rec.OutFile) -match 'SPID=(\d+)')
+    }
+    if ($ok) {
+        $mm = [regex]::Match((Get-Content -Raw $rec.OutFile), 'SPID=(\d+)')
+        $rec.Spid = [int]$mm.Groups[1].Value
+        # 用 Write-Host（信息流）输出确认，避免被“$A = Start-SqlSession”当作返回值捕获
+        Write-Host ("会话 {0} 已建立，@@SPID = {1}" -f $Name, $rec.Spid)
+    } else {
+        Write-Warning ("会话 {0} 读取 @@SPID 超时" -f $Name)
+    }
     return $rec
 }
 
