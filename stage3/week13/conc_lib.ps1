@@ -19,7 +19,8 @@ function Start-SqlSession {
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $script:SqlCmd
     # -o 输出文件；-r 1 把错误消息也并入输出文件；-W 去尾空格；-s 列分隔符
-    $psi.Arguments = '-S "{0}" -E -d retail_store -W -s "|" -r 1 -o "{1}"' -f $script:Server, $outFile
+    # -u 让 -o 输出文件为 Unicode(UTF-16)，避免中文按 GBK 写入导致读取乱码
+    $psi.Arguments = '-S "{0}" -E -d retail_store -W -s "|" -r 1 -u -o "{1}"' -f $script:Server, $outFile
     $psi.RedirectStandardInput = $true
     $psi.RedirectStandardOutput = $false
     $psi.RedirectStandardError = $false
@@ -43,7 +44,7 @@ function Send-Sql {
 
 function Get-SqlOut {
     param($Rec)
-    if (Test-Path $Rec.OutFile) { return Get-Content -Raw -Encoding UTF8 $Rec.OutFile }
+    if (Test-Path $Rec.OutFile) { return Get-Content -Raw $Rec.OutFile }
     return ''
 }
 
@@ -77,9 +78,65 @@ function Reset-Baseline {
     & $script:SqlCmd -S $script:Server -E -d retail_store -i $InitPath 2>&1 | Out-Null
 }
 
-# 查询某商品当前库存（监控连接）
+# 查询某商品当前库存（监控连接，默认已提交读）
 function Get-Qty {
     param([string]$ProductId)
     $row = & $script:SqlCmd -S $script:Server -E -d retail_store -h -1 -W -Q "SET NOCOUNT ON; SELECT quantity FROM dbo.inventory WHERE product_id='$ProductId';" 2>&1
     return [int]($row | Where-Object { $_ -match '^\s*\d+\s*$' } | Select-Object -First 1)
+}
+
+# ============================================================
+# 条件轮询：用“等待条件成立”替代固定 Start-Sleep，消除双会话竞态
+# 所有探测只查 DMV 或加 NOLOCK，监控连接自身不会被业务锁阻塞。
+# ============================================================
+
+# 监控连接执行返回单个标量（无表头）
+function Invoke-Scalar {
+    param([string]$Sql)
+    $r = & $script:SqlCmd -S $script:Server -E -d retail_store -h -1 -W -Q $Sql 2>&1
+    return ($r | Where-Object { $_ -match '^\s*.+\s*$' } | Select-Object -First 1)
+}
+
+# 通用：轮询直到条件脚本块返回 true，超时则警告并返回 false
+function Wait-Until {
+    param([scriptblock]$Condition, [int]$TimeoutMs = 15000, [int]$IntervalMs = 200, [string]$Label = '条件')
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($sw.ElapsedMilliseconds -lt $TimeoutMs) {
+        if (& $Condition) { return $true }
+        Start-Sleep -Milliseconds $IntervalMs
+    }
+    Write-Warning ("等待超时：{0}" -f $Label)
+    return $false
+}
+
+# 等待直到出现至少一个阻塞请求
+function Wait-Blocked {
+    param([int]$TimeoutMs = 15000)
+    Wait-Until -TimeoutMs $TimeoutMs -Label '出现阻塞' -Condition {
+        [int](Invoke-Scalar "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.dm_exec_requests WHERE blocking_session_id<>0;") -gt 0
+    }
+}
+
+# 等待直到所有阻塞请求清零
+function Wait-NoBlock {
+    param([int]$TimeoutMs = 15000)
+    Wait-Until -TimeoutMs $TimeoutMs -Label '阻塞清零' -Condition {
+        [int](Invoke-Scalar "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.dm_exec_requests WHERE blocking_session_id<>0;") -eq 0
+    }
+}
+
+# 等待打开的用户事务数等于预期
+function Wait-TranCount {
+    param([int]$Expected, [int]$TimeoutMs = 15000)
+    Wait-Until -TimeoutMs $TimeoutMs -Label ("用户事务数={0}" -f $Expected) -Condition {
+        [int](Invoke-Scalar "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.dm_tran_session_transactions;") -eq $Expected
+    }
+}
+
+# 等待某商品库存（NOLOCK，可读未提交值）等于预期
+function Wait-Qty {
+    param([string]$ProductId, [int]$Expected, [int]$TimeoutMs = 15000)
+    Wait-Until -TimeoutMs $TimeoutMs -Label ("{0} 库存={1}" -f $ProductId, $Expected) -Condition {
+        [int](Invoke-Scalar "SET NOCOUNT ON; SELECT quantity FROM dbo.inventory WITH(NOLOCK) WHERE product_id='$ProductId';") -eq $Expected
+    }
 }
